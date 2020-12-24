@@ -1,7 +1,7 @@
 ########## Preparations
 
 prepare:
-	pip install pairlist vapory yaplotlib matplotlib numpy networkx scipy cycless
+	pip install pairlist vapory yaplotlib matplotlib numpy networkx scipy cycless svgwrite
 	pip install --upgrade pip
 
 fmodules: $(patsubst %.f95, %.cpython-37m-darwin.so, $(wildcard *.f95))
@@ -103,4 +103,6 @@ FigureS6.pdf: FigureS6.py
 
 ########## Sync
 sync:
-	rsync -av q r *.repr.pickle 192.168.3.3:/r7/matto/hyperhomogeneity/
+	rsync -av q r *.repr.pickle *.cycles5.pickle 192.168.3.3:/r7/matto/hyperhomogeneity/
+#syncback:
+#	rsync -av --dry-run --include="*/" --include="*.cycles5.pickle" --exclude="*" 192.168.3.3:/r7/matto/hyperhomogeneity/ .

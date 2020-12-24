@@ -81,7 +81,5 @@ zoom=50
 dwg = svgwrite.Drawing(size=(zoom*N,zoom*N))
 draw_mol_svg(dwg, g, zoom=zoom, N=N)
 svg = dwg.tostring()
-from IPython.display import SVG, display
-display(SVG(svg))
 with open("Figure2a.svg", "w") as f:
     f.write(svg)
