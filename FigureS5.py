@@ -1,3 +1,7 @@
+"""
+Molecule-cycle interactions of molecules of different arrangements.
+"""
+
 from mpl_toolkits.axes_grid.inset_locator import inset_axes
 import matplotlib.cm as cm
 import glob

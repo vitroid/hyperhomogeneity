@@ -1,3 +1,7 @@
+"""
+Divergence of the interaction at the surface of ice.
+"""
+
 from mpl_toolkits.axes_grid.inset_locator import inset_axes
 import matplotlib.cm as cm
 

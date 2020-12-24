@@ -1,3 +1,6 @@
+"""
+2D histogram of the cumulative interaction.
+"""
 from ice7analysis import *
 import glob
 import sys

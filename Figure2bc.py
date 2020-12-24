@@ -1,3 +1,8 @@
+"""
+cycle view of a model 2D ice 
+"""
+
+
 import svgwrite
 from collections import defaultdict
 import numpy as np

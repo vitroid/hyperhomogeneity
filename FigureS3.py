@@ -1,5 +1,6 @@
-# 氷7の副ネットワークの相殺効果。
-# 横軸は一番近い分子ではなく、近い3つの相互作用の和にする。
+"""
+Interaction with a cycle does not depend on its size.
+"""
 
 
 from mpl_toolkits.axes_grid.inset_locator import inset_axes

@@ -35,6 +35,8 @@ extend.%: $(wildcard q/*.q.nx3a)
 	echo $^ | sed -e "s/q.nx3a/$*/g" -e "s:q/::g" | xargs make -k -j 8
 extendr.%: $(wildcard r/*.nx3a)
 	echo $^ | sed -e "s/nx3a/$*/g" -e "s:r/::g" | xargs make -k -j 8
+sequential.%: $(wildcard q/*.q.nx3a)
+	echo $^ | sed -e "s/q.nx3a/$*/g" -e "s:q/::g" | xargs make -k
 
 
 %.couhi.pickle: q/%.q.nx3a
@@ -104,5 +106,5 @@ FigureS6.pdf: FigureS6.py
 ########## Sync
 sync:
 	rsync -av q r *.repr.pickle *.cycles5.pickle 192.168.3.3:/r7/matto/hyperhomogeneity/
-#syncback:
-#	rsync -av --dry-run --include="*/" --include="*.cycles5.pickle" --exclude="*" 192.168.3.3:/r7/matto/hyperhomogeneity/ .
+syncback:
+	rsync -av --include="*/" --include="*.pdf" --include="*.yap" --include="*.svg" --exclude="*" 192.168.3.3:/r7/matto/hyperhomogeneity/ .

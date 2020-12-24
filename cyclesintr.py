@@ -1,8 +1,9 @@
-# 分子とサイクルの相互作用をすべて記録する。
+"""
+Record all the molecule-cycle interactions.
+"""
 
-# rc('text', usetex=True) # No use on MacPro
+from ice7analysis import *
 import pickle
-
 import networkx as nx
 import random
 import sys
@@ -15,7 +16,6 @@ with open(cyclefile, "rb") as f:
 cycles = bucket["cycles"]
 weights = bucket["weight"]
 
-from ice7analysis import *
 
 comeus, cell = load_nx3a(open(coordfile))
 cellmat = np.diag(cell)

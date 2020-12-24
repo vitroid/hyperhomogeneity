@@ -1,3 +1,9 @@
+"""
+Common functions.
+
+It contains many functions that are not used for historical reasons.
+"""
+
 import numpy as np
 from math import sin,cos,pi,sqrt, acos
 from matplotlib import pyplot as plt
@@ -20,14 +26,14 @@ UJ = 4.184          #1 cal in J
 
 def load_cell(file):
     """
-    Cellサイズが書かれたファイル(さいしょの1行のみ)を読みこむ。
+    Special function to read the cell size from Tanaka's format.
     """
     return np.array([float(x) for x in file.readline().split()[4:7]])
 
 
 def load_nx3a(file):
     """
-    重心位置とオイラー角を読みこむ。
+    Centers of mass and Euler angles.
     """
     coms = []
     while True:
@@ -49,7 +55,7 @@ def load_nx3a(file):
 
 def load_coms(file):
     """
-    重心位置とオイラー角を読みこむ。
+    Centers of mass and Euler angles; Tanaka's format.
     """
     coms = []
     while True:
@@ -68,7 +74,7 @@ def load_coms(file):
 
 def load_coms2(file):
     """
-    重心位置とオイラー角を読みこむ。
+    Another format of Tanaka's
     """
     coms = []
     cell = None
@@ -95,24 +101,6 @@ def load_coms2(file):
 
 
 
-def load_epair(file):
-    """
-    原子の相対座標を読みこむ。
-    """
-    rels = dict()
-    epair = dict()
-    while True:
-        line = file.readline()
-        if len(line) == 0:
-            break
-        if line[0] == "#":
-            continue
-        cols = line.split()
-        labels = tuple([int(x)-1 for x in cols[0:2]])
-        rel = [float(x) for x in cols[3:12]]
-        rels[labels] = rel
-        epair[labels] = float(cols[2])
-    return rels, epair
 
 
 def quat2rotmat(q):
@@ -703,24 +691,14 @@ EZ = np.array((0.0, 0.0, 1.0))
 
 # calculate quaternions from a rotation matrix (three orthogonal unit vectors)
 def rotmat2quat0(i, j, k):
-    # print sqlen(i),sqlen(j),sqlen(k)
-
-    # i軸をx軸に移す回転の軸は、iとxの2分面上にある。
-    # j軸をy軸に移す回転の軸は、jとyの2分面上にある。
-    # そして、それらを同時にみたす回転の軸は、2つの2分面の交線である。
-    # 交線は、2つの面の法線のいずれとも直交する=外積である。*/
-
     a = op(i - EX, j - EY)
     if a is None:
         a = op(i - EX, k - EZ)
         if a is None:
             a = op(k - EZ, j - EY)
             if a is None:
-                #sys.stderr.write("outer prod warning\n")
-                # //全く回転しないケース
                 return 1.0, 0.0, 0.0, 0.0
     a /= np.linalg.norm(a)
-    # /*回転軸aが求まったので、x軸をi軸に重ねる回転の大きさを求める。。*/
     x0 = EX - a[0] * a
     i0 = i - a[0] * a
     if np.linalg.norm(i0) < 0.1:
@@ -744,35 +722,22 @@ def rotmat2quat0(i, j, k):
 
 
 def rotmat2quat_orig(m):
-    """
-    数学ではベクトルは縦行列とみなすので、回転行列は前からかけるが、計算機の中では
-    ベクトルは横行列のほうが何かと扱いやすい。その場合、回転行列は、通常のものを
-    転置したものを後ろからかける。
-
-    後置形式の回転行列をquaternionに戻す。
-    """
-    # print "rotmat2quat is not reliable yet."
-    # sys.exit(1)
     n = m.transpose()
     return rotmat2quat0(np.array(n[0]), np.array(n[1]), np.array(n[2]))
 
 def rotmat2quat(m):
     """
-    数学ではベクトルは縦行列とみなすので、回転行列は前からかけるが、計算機の中では
-    ベクトルは横行列のほうが何かと扱いやすい。その場合、回転行列は、通常のものを
-    転置したものを後ろからかける。
+    In mathematics, vectors are regarded as vertical matrices, so rotation matrices are applied from the front, but in a computer, vectors are easier to handle as horizontal matrices. In that case, the rotation matrix is multiplied from right by transposing the normal one. 
 
-    後置形式の回転行列をquaternionに戻す。
+    Return the rotation matrix in posterior form to quaternion.
     """
-    # print "rotmat2quat is not reliable yet."
-    # sys.exit(1)
     return rotmat2quat0(np.array(m[0]), np.array(m[1]), np.array(m[2]))
 
 
 
 def quat2euler(q):
     """
-    QaternionをEuler角にする
+    Qaternion to Euler angle
     """
     e = np.zeros(3)
     if q[0] == 1.0:
@@ -817,7 +782,7 @@ def quat2euler(q):
 
 def quat2rotmat(q):
     """
-    Quaternionを回転行列(後置形式)にする。
+    Quaternion to Rotation matrix
     """
     a, b, c, d = q
     sp11 = (a * a + b * b - (c * c + d * d))
@@ -836,7 +801,7 @@ def quat2rotmat(q):
 
 def euler2quat(e):
     """
-    Euler角をQuaternionにする。
+    Euler angle to quaternion
     """
     ea, eb, ec = e
     a = cos(ea / 2) * cos((ec + eb) / 2)
@@ -846,48 +811,6 @@ def euler2quat(e):
     return np.array((a, b, c, d))
 
 
-def regulate_ori(R):
-    """
-    Quench構造の配向から、Quench前の配向を想像する。
-    """
-    R[R > 0.9] = 1.0
-    R[R < -0.9] = -1.0
-
-    A = 0.6 < R
-    B = R < 0.8
-    AB = A & B
-    R[AB] = 0.5**0.5
-
-    C = -0.8 < R
-    D = R < -0.6
-    CD = C & D
-    R[CD] = -0.5**0.5
-
-    E = -0.2 < R
-    F = R < 0.2
-    EF = E & F
-    R[EF] = 0.0
-
-    # 例外値があったら止める。
-    Q = (R>0.9) | (R<-0.9) | AB | CD | EF
-    assert np.all(Q), R
-    return R
-
-
-def fivegroups(fort3):
-    groups = defaultdict(int)
-    for line in fort3:
-        cols = line.split()
-        i,j = [int(x)-1 for x in cols[:2]]
-        ep  = float(cols[2])
-        if ep > 10:
-            groups[i] += 1
-            groups[j] += 1
-
-    members = [[] for i in range(5)]
-    for i in range(len(groups)):
-        members[groups[i]].append(i)
-    return members
 
 
 def accum2(comeus, cellmat, sources=None, targets=None, maxdist=13.0, exclude=None):
@@ -955,27 +878,11 @@ def accum2(comeus, cellmat, sources=None, targets=None, maxdist=13.0, exclude=No
         js = np.argsort(dist)
         last = np.count_nonzero(dist < maxdist)
         js = js[:last]
-        #print(atoms[i])
-        #print(js)
-        #print(targets[js])
-        #print(atoms[targets[js]])
-        #print(wrap[js])
-        #print(len(dist))
-        #print(len(js))
-        #print(len(sources))
-        #print(len(sources))
-        # atoms is a full-sized array.
-        # shapes of dist and wrap are like targets
+
         Coulombs, LJs = interactions4px(atoms[i], atoms[newtargets[js]], wrap[js], charges, AA, BB)
-        #print(dist)
-        #Ndata = Nmol*6//10
-        #js = js[:Ndata]
-        #print(js)
-        #print(LJs)
-        #assert False
+
         sorteddist = dist[js]
         sortedEpot = Coulombs + LJs
-        # print(sortedEpot[0])
         if np.isnan(sortedEpot[0]):
             sortedEpot[0] = 0 # avoid NaN
         sortedcumsum = np.cumsum(sortedEpot)
@@ -1011,7 +918,6 @@ def accum0(comeus, cellmat, targets=None, maxdist=13.0, atoms=None, LJ=tip4piceL
     for i in targets:
         # displacement vectors
         disp = comeus[:,:3] - comeus[i,:3]
-        # 簡潔さと読み易さが両立しないのでループで書く。
         wrap = np.zeros_like(disp)
         for j in range(disp.shape[0]):
             wrap[j] = np.floor(disp[j] @ celli + 0.5) @ cellmat
@@ -1021,10 +927,6 @@ def accum0(comeus, cellmat, targets=None, maxdist=13.0, atoms=None, LJ=tip4piceL
         js = js[:last]
 
         Coulombs, LJs = interactions4p(0, atoms[js], wrap[js], charges, AA, BB)
-        #print(dist)
-        #Ndata = Nmol*6//10
-        #js = js[:Ndata]
-        #print(js)
 
         sorteddist = dist[js]
         sortedEpot = Coulombs + LJs
@@ -1037,8 +939,7 @@ def accum0(comeus, cellmat, targets=None, maxdist=13.0, atoms=None, LJ=tip4piceL
 
 def accum_sd(comeus, cellmat, targets, r1=3.5, lw=1, tag="", style='-'):
     """
-    相互作用を近い順に加算する。
-    距離ごとの、積算対相互作用の標準偏差を計算する。
+    相互作用を近い順に加算して、距離ごとの、累積対相互作用の標準偏差を計算する。
     """
     d_e = accum0(comeus, cellmat, targets)
 
@@ -1048,7 +949,6 @@ def accum_sd(comeus, cellmat, targets, r1=3.5, lw=1, tag="", style='-'):
     cnt = 0
 
     for sorteddist, sortedcumsum in d_e:
-        # 距離を等間隔にとりなおす。少し難しい。
         cs = np.zeros_like(equalspacing)
         for i in range(equalspacing.shape[0]):
             cut = sortedcumsum[sorteddist < equalspacing[i]]
@@ -1112,11 +1012,6 @@ def primseco(comeus, cellmat):
     pos = comeus[:,:3]
     grid = np.floor(pos @ np.linalg.inv(unitcell)+0.5).astype(int)
     grid %= 16
-    #all grid must be unique
-    #print(len(grid))
-    #grid = set([tuple(x) for x in grid])
-    #print(len(grid))
-    #主格子は、(たぶん)FCCの位置と、それを(111)ずらした位置。
     isprim = [None for i in range(len(comeus))]
     for i,g in enumerate(grid):
         x,y,z = g

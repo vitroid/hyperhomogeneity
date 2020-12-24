@@ -1,14 +1,14 @@
-# 氷7の副ネットワークの相殺効果。
-# 横軸は一番近い分子ではなく、近い3つの相互作用の和にする。
+"""
+Interactions with cycles.
+"""
 
 
 from mpl_toolkits.axes_grid.inset_locator import inset_axes
 import matplotlib.cm as cm
-#plt.rc(usetex = True)
 from matplotlib import rc
 from matplotlib import pyplot as plt
+from ice7analysis import *
 
-# rc('text', usetex=True) # No use on MacPro
 import pickle
 
 import networkx as nx
@@ -30,7 +30,6 @@ ices = [
 ]
 
 
-from ice7analysis import *
 
 
 

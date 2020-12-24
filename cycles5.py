@@ -10,7 +10,7 @@ import random
 from cycless.dicycles import dicycles_iter
 
 
-
+# Quasi-inversion of a matrix.
 def AtoX(A):
     # 環の個数のほうが十分多い場合の近似
     # 特異値分解
@@ -41,8 +41,7 @@ def cover_by_cycles(g, Nmol):
 
     A = []
     cycles = []
-    for s in range(4, 30):
-        print(f"cycle size {s}")
+    for s in range(4, 20):
         lastA = len(A)
         for cycle in dicycles_iter(g,s, vec=True):
             cycles.append(cycle)
@@ -56,11 +55,14 @@ def cover_by_cycles(g, Nmol):
         lastA = len(A)
         AT = np.array(A).T
         x, rank = AtoX(AT)
+        print(f"cycle size {s}")
         print(f"number of cycles {len(cycles)}")
         b = AT @ x
         print(b)
         if np.allclose(b, np.ones_like(b)):
+            # sum of weights is one at every edge
             break
+    assert np.allclose(b, np.ones_like(b))
     return cycles, x
 
 if __name__ == "__main__":
@@ -76,21 +78,6 @@ if __name__ == "__main__":
     water = tip4picesites()
     g = hbn(rcom, cellmat, R, water)
 
-    # 氷7でうまく分割できない問題を解決するために、成分に分ける。
-    # 氷がうまくいかないのは、脱分極がちゃんとできていないから。
-
-    # for compo in nx.connected_components(nx.Graph(g)):
-    #     subgraph = g.subgraph(compo) # compo is a set of node labels.
-    #
-    #     for node in subgraph:
-    #         assert subgraph.in_degree(node) == 2
-    #         assert subgraph.out_degree(node) == 2
-    #     A = GenerateA(subgraph)
-    #     A = np.array(A).T
-    #     x, rank = AtoX(A)
-    #     print(x, rank, A.shape)
-    #     b = A @ x
-    #     print(b)
     cycles, weights =cover_by_cycles(g, Nmol)
 
     if len(sys.argv) > 2:

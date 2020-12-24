@@ -1,13 +1,10 @@
+"""
+Illustration of the cycles that pass through a water molecule in ice Ih.
+"""
+
 import yaplotlib as yap
 
 s = ""
-# s += yap.SetPalette(1,0,0,0) #black bg
-# for i in range(30): # -1 .. 0  blue to black
-#     s += yap.SetPalette(i+10, 0, 0, (30-i)*255//30)
-# for i in range(30): # 0 .. 1  black to white
-#     s += yap.SetPalette(i+40, i*255//30, i*255//30, i*255//30)
-# for i in range(30): # 1 .. 2  white to red
-#     s += yap.SetPalette(i+70, 255, (30-i)*255//30, (30-i)*255//30)
 s += yap.SetPalette(1,255,255,255) #black bg
 for i in range(30): # -1 .. 0  blue to white
     s += yap.SetPalette(i+10, i*255//30, i*255//30, 255)
