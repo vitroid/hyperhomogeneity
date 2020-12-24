@@ -1,7 +1,8 @@
 ########## Preparations
 
 prepare:
-	pip install pairlist vapory yaplotlib f2py matplotlib numpy networkx
+	pip install pairlist vapory yaplotlib matplotlib numpy networkx scipy cycless
+	pip install --upgrade pip
 
 fmodules: $(patsubst %.f95, %.cpython-37m-darwin.so, $(wildcard *.f95))
 %.cpython-37m-darwin.so: %.f95
@@ -29,9 +30,11 @@ fmodules: $(patsubst %.f95, %.cpython-37m-darwin.so, $(wildcard *.f95))
 
 
 ices.%:
-	for ice in 1h 3 5 6 7; do ls q/$$ice-*.q.nx3a | sed -e "s/q.nx3a/$*/g" -e "s:q/::g"; done | xargs make -k -j 6
+	for ice in 1h 3 5 6 7; do ls q/$$ice-*.q.nx3a | sed -e "s/q.nx3a/$*/g" -e "s:q/::g"; done | xargs make -k -j 8
 extend.%: $(wildcard q/*.q.nx3a)
-	echo $^ | sed -e "s/q.nx3a/$*/g" -e "s:q/::g" | xargs make -k -j 6
+	echo $^ | sed -e "s/q.nx3a/$*/g" -e "s:q/::g" | xargs make -k -j 8
+extendr.%: $(wildcard r/*.nx3a)
+	echo $^ | sed -e "s/nx3a/$*/g" -e "s:r/::g" | xargs make -k -j 8
 
 
 %.couhi.pickle: q/%.q.nx3a
@@ -39,7 +42,10 @@ extend.%: $(wildcard q/*.q.nx3a)
 
 ########## Everything
 
-everything: ices.hist.pickle ices.cycles5.pickle ices.cyclesintr.pickle ices.cycles5stat.pickle ices.repr.pickle H2.pickle ices.couhi.pickle Figure1.pdf Figure2a.svg Figure2bc.svg Figure3.pdf Figure4.pdf FigureS2.yap FigureS3.pdf FigureS4.pdf FigureS5.pdf FigureS6.pdf
+everything: ices.hist.pickle extend.cycles5.pickle ices.cyclesintr.pickle \
+	extend.cycles5stat.pickle extendr.repr.pickle H2.pickle ices.couhi.pickle \
+	Figure1.pdf Figure2a.svg Figure2bc.svg Figure3.pdf Figure4.pdf FigureS2.yap \
+	FigureS3.pdf FigureS4.pdf FigureS5.pdf FigureS6.pdf
 	echo Done.
 
 
@@ -88,9 +94,13 @@ FigureS4.pdf: 1cs.nx3a FigureS4.py
 
 # Cumulative Molecule-cycle interaction classified by the molecular arrangements.
 FigureS5.pdf: FigureS5.py
-	-make extend.cycles5.pickle extend.repr.pickle extend.cycles5stat.pickle 9.cycles5stat.pickle
+	-make extend.cycles5.pickle extendr.repr.pickle extend.cycles5stat.pickle 9.cycles5stat.pickle
 	python FigureS5.py
 
 # Cumulative interaction of CO-like molecule
 FigureS6.pdf: FigureS6.py
 	python FigureS6.py
+
+########## Sync
+sync:
+	rsync -av q r *.repr.pickle 192.168.3.3:/r7/matto/hyperhomogeneity/

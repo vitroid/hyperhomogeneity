@@ -26,10 +26,7 @@ AA,BB = tip4piceLJ()
 every=5
 
 for ice, basename, ax in ices:
-    if basename == "6":
-        coord = f"q/{basename}-1001.q.nx3a"
-    else:
-        coord = f"q/{basename}-1000.q.nx3a"
+    coord = f"q/{basename}-1000.q.nx3a"
     comeus, cell = load_nx3a(open(coord))
     cellmat = np.diag(cell)
     rcom = comeus[:,:3] @ np.linalg.inv(cellmat)

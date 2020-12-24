@@ -34,10 +34,7 @@ for panel, (ice, ra) in enumerate([["1h", [-150,-80]],
                                          ["5",  [-150,-80]],
                                          ["6",  [-150,-80]],
                                          ["7",  [-130,-20]]]):
-    if ice == "6":
-        comeus, cell = load_nx3a(open(f"q/{ice}-1001.q.nx3a"))
-    else:
-        comeus, cell = load_nx3a(open(f"q/{ice}-1000.q.nx3a"))
+    comeus, cell = load_nx3a(open(f"q/{ice}-1000.q.nx3a"))
     cellmat = np.diag(cell)
     d_e = accum0(comeus, cellmat, range(50), maxdist=13.2)
     N = len(d_e)
