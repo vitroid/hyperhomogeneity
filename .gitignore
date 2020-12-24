@@ -1,0 +1,16 @@
+
+*.pickle
+
+__pycache__/
+
+*.pdf
+
+*.so
+
+*.plist
+
+*.yap
+
+*.svg
+
+unused/
