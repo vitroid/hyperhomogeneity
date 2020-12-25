@@ -20,8 +20,10 @@ fmodules: $(patsubst %.f95, %.cpython-37m-darwin.so, $(wildcard *.f95))
 
 # Classify the molecular arrangements in the cell.
 # Used in Figure S5 only
-%.repr.pickle: r/%.nx3a
-	python unique_orientations3.py $< $@
+%-1000.repr.pickle: r/%-1000.nx3a
+	$(PYTHON) unique_orientations3.py $< $@
+# Share the same table to use the unique labelings to the arrangements
+	i=1001; while [ $$i -lt 1030 ]; do ln $*-1000.repr.pickle $*-$$i.repr.pickle; i=`expr $$i + 1`; done
 
 # Molecule-cycle interaction classified by the molecular arrangements.
 # Used in Figure S5 only.
