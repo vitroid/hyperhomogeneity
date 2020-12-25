@@ -11,7 +11,7 @@ from collections import defaultdict
 from ice7analysis import *
 
 # fig, ax = plt.subplots(1,3)
-fig  = plt.figure(figsize=(5,14))
+fig  = plt.figure(figsize=(7,20))
 linear = np.linspace(2.5,13.5,1000)
 
 import pickle

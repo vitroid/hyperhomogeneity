@@ -33,7 +33,7 @@ cell = np.array([NN,NN,NN], dtype=float) * 2**0.5
 cellmat = np.diag(cell)
 coms /= cell # relative
 
-equalspacing = np.linspace(0, NN/2, 100)
+equalspacing = np.linspace(0, NN/2, 1000)
 
 oSs = np.zeros_like(equalspacing)
 oSss = np.zeros_like(equalspacing)
