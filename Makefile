@@ -22,7 +22,7 @@ fmodules: $(patsubst %.f95, %.cpython-37m-darwin.so, $(wildcard *.f95))
 # Used in Figure S5 only
 %-1000.repr.pickle: r/%-1000.nx3a
 	$(PYTHON) unique_orientations3.py $< $@
-# Share the same table to use the unique labelings to the arrangements
+# Share the same table to use the unique labellings to the arrangements
 	i=1001; while [ $$i -lt 1030 ]; do ln $*-1000.repr.pickle $*-$$i.repr.pickle; i=`expr $$i + 1`; done
 9.repr.pickle: r/9.nx3a
 	$(PYTHON) unique_orientations3.py $< $@
@@ -47,9 +47,9 @@ extendr.%: $(wildcard r/*-1000.nx3a)
 ########## Everything
 
 everything: ices.hist.pickle extend.cycles5.pickle ices.cyclesintr.pickle \
-	extend.cycles5stat.pickle extendr.repr.pickle H2.pickle ices.couhi.pickle \
-	Figure1.pdf Figure2a.svg Figure2bc.svg Figure3.pdf Figure4.pdf FigureS2.yap \
-	FigureS3.pdf FigureS4.pdf FigureS5.pdf FigureS6.pdf
+	extend.cycles5stat.pickle extendr.repr.pickle ices.couhi.pickle \
+	Figure1.pdf Figure2a.svg Figure2bc.svg Figure3.pdf Figure4.pdf FigureS1.pdf \
+	FigureS2.yap FigureS3.pdf FigureS4.pdf FigureS5.pdf
 	echo Done.
 
 
@@ -81,29 +81,29 @@ Figure4.pdf: Figure4.py
 	python Figure4.py
 
 # Cumulative interaction of CO-like crystal
-FigureS2.pdf: FigureS2.py
-	python FigureS2.py
+FigureS1.pdf: FigureS1.py
+	python FigureS1.py
 
 # Illustration of cycles that passes through a water molecule in ice Ih.
 # Render with yaplot (https://github.com/vitroid/Yaplot)
-FigureS3.yap: FigureS3.py
-	-make 1h-1000.cycles5.pickle q/1h-1000.q.nx3a
-	python FigureS3.py
+FigureS2.yap: FigureS2.py q/1h-1000.q.nx3a
+	-make 1h-1000.cycles5.pickle
+	python FigureS2.py
 
 # Interaction of a dipole with cycles that pass through the dipole,
 # classified by the size of the cycle.
-FigureS4.pdf: FigureS4.py
+FigureS3.pdf: FigureS3.py
 	-make ices.cycles5.pickle ices.cyclesintr.pickle
-	python FigureS4.py
+	python FigureS3.py
 
 # Divergence of the interaction at the ice surface.
-FigureS5.pdf: 1cs.nx3a FigureS5.py
-	python FigureS5.py
+FigureS4.pdf: 1cs.nx3a FigureS4.py
+	python FigureS4.py
 
 # Cumulative Molecule-cycle interaction classified by the molecular arrangements.
-FigureS6.pdf: FigureS6.py
+FigureS5.pdf: FigureS5.py
 	-make extend.cycles5.pickle extendr.repr.pickle extend.cycles5stat.pickle 9.cycles5stat.pickle
-	python FigureS6.py
+	python FigureS5.py
 
 
 ########## Sync
