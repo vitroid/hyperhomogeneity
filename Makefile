@@ -35,10 +35,8 @@ ices.%:
 	for ice in 1h 3 5 6 7; do ls q/$$ice-*.q.nx3a | sed -e "s/q.nx3a/$*/g" -e "s:q/::g"; done | xargs make -k -j 8
 extend.%: $(wildcard q/*.q.nx3a)
 	echo $^ | sed -e "s/q.nx3a/$*/g" -e "s:q/::g" | xargs make -k -j 8
-extendr.%: $(wildcard r/*.nx3a)
+extendr.%: $(wildcard r/*-1000.nx3a)
 	echo $^ | sed -e "s/nx3a/$*/g" -e "s:r/::g" | xargs make -k -j 8
-sequential.%: $(wildcard q/*.q.nx3a)
-	echo $^ | sed -e "s/q.nx3a/$*/g" -e "s:q/::g" | xargs make -k
 
 
 %.couhi.pickle: q/%.q.nx3a
