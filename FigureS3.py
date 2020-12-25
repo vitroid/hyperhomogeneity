@@ -1,120 +1,82 @@
 """
-Interaction with a cycle does not depend on its size.
+Illustration of the cycles that pass through a water molecule in ice Ih.
 """
 
+import yaplotlib as yap
 
-from mpl_toolkits.axes_grid.inset_locator import inset_axes
-import matplotlib.cm as cm
-from matplotlib import pyplot as plt
-import glob
+s = ""
+s += yap.SetPalette(1,255,255,255) #black bg
+for i in range(30): # -1 .. 0  blue to white
+    s += yap.SetPalette(i+10, i*255//30, i*255//30, 255)
+for i in range(30): # 0 .. 1  white to black
+    s += yap.SetPalette(i+40, (30-i)*255//30, (30-i)*255//30, (30-i)*255//30)
+for i in range(30): # 1 .. 2  black to red
+    s += yap.SetPalette(i+70, i*255//30, 0, 0)
+s += yap.SetPalette(5,150,0,0) #black bg
+s += yap.SetPalette(6,0,150,150) #black bg
 
-#plt.rc(usetex = True)
-from matplotlib import rc
 
-# rc('text', usetex=True) # No use on MacPro
 import pickle
 
-import networkx as nx
-import random
-
-random.seed(1)
-
-fig = plt.figure(figsize=(8,10))
-gs = plt.GridSpec(5,2)
-plt.subplots_adjust(wspace=0, hspace=0)
-
-ices = [
-        ["Ih",  "1h" ],
-        ["III", "3" ],
-        ["V",   "5" ],
-        ["VI",  "6" ],
-        ["VII", "7" ],
-]
-
+with open("1h-1000.cycles5.pickle", "rb") as f:
+    bucket = pickle.load(f)
+cycles = bucket["cycles"]
+weights = bucket["weight"]
 
 from ice7analysis import *
 
+coord = "q/1h-1000.q.nx3a"
+comeus, cell = load_nx3a(open(coord))
+cellmat = np.diag(cell)
+rcom = comeus[:,:3] @ np.linalg.inv(cellmat)
 
-for panel, (ice, basename) in enumerate(ices):
-    print(ice)
-    ra = (-110, -40)
-    nbin = ra[1] - ra[0]
-    bins = [np.zeros(nbin) for i in range(20)]
-    binsw = [np.zeros(nbin) for i in range(20)]
-    binw = 1.0
-    for cycles5 in glob.glob(f"{basename}-*.cycles5.pickle"):
-        with open(cycles5, "rb") as f: # non-quenched is ok
-            bucket = pickle.load(f)
-            cycles = bucket["cycles"]
-            weights = bucket["weight"]
-        cyclesintr = cycles5.replace("cycles5", "cyclesintr")
-        print(cyclesintr)
-        with open(cyclesintr, "rb") as f:
-            intr, dist, mord = pickle.load(f)
+Nmol = len(comeus)
+R = np.zeros([Nmol,3,3])
+for i in range(Nmol):
+    e = comeus[i,3:6]
+    R[i] = quat2rotmat(euler2quat(e))
 
-        coord = cycles5.replace("cycles5.pickle", "q.nx3a")
-        coord = "q/" + coord
+water = tip4picesites()
+charges = tip4picecharges()
 
-        comeus, cell = load_nx3a(open(coord))
-        cellmat = np.diag(cell)
-        rcom = comeus[:,:3] @ np.linalg.inv(cellmat)
+dg = hbn(rcom, cellmat, R, water)
 
-        Nmol = len(comeus)
-        R = np.zeros([Nmol,3,3])
-        for i in range(Nmol):
-            e = comeus[i,3:6]
-            R[i] = quat2rotmat(euler2quat(e))
 
-        water = tip4picesites()
-        charges = tip4picecharges()
 
-        dg = hbn(rcom, cellmat, R, water)
+cpos = np.array([0.5,0.5,0.5])
+center = np.argsort(np.linalg.norm(cpos-rcom, axis=1))[0]
 
-        # 分子内座標
-        waters = water @ R
+w = water @ R[center] + rcom[center] @ cellmat
+s += yap.Size(0.5)
+s += yap.Color(5) #red
+s += yap.Circle(w[3])
 
-        for center in range(Nmol):
-            sum_cen = defaultdict(float)
-            for c in range(intr.shape[1]):
-                cycle, weight = cycles[c], weights[c]
-                e, d, morder = intr[center, c], dist[center, c], mord[center, c]
+s += yap.Size(0.25)
+s += yap.Color(6) #cyan?
+s += yap.Circle(w[0])
+s += yap.Circle(w[1])
 
-                if d == 0:
-                    bin = int(np.floor(e+0.5)-ra[0])
-                    if 0 <= bin < nbin:
-                        binsw[len(cycle)][bin] += weight
-                        bins[len(cycle)][bin] += 1.0 #重みをかけるのをやめ、規格化して、純粋にサイズと相互作用の関係だけに絞る。
+sumw_center = defaultdict(float)
 
-    axL = plt.subplot(gs[panel:panel+1, :1])
-    # fig = plt.figure() bbox_to_anchor=(1.05, 1), loc='upper left',
-    axL.annotate("ice {0}".format(ice), xy=(0.7,0.8), fontsize=14,xycoords='axes fraction', horizontalalignment='left')
-    for nmem in range(4,20):
-        total = np.sum(bins[nmem])
-        if total > 0:
-            print(nmem)
-            axL.plot(range(*ra), bins[nmem] / (total*binw), label=f"{nmem}-member")
-    axL.set_xlim(*ra)
-    axL.yaxis.set_visible(False)
-    if ice == "VII":
-        axL.set_xlabel(r"Interaction Energy / kJ mol$^{-1}}$", fontsize=14)
-    else:
-        axL.xaxis.set_visible(False)
+for cycle, weight in zip(cycles, weights):
+    if center in cycle:
+        for i in range(len(cycle)):
+            a, b = cycle[i-1], cycle[i]
+            sumw_center[a,b] += weight
 
-    axR = plt.subplot(gs[panel:panel+1, -1:])
-    # fig = plt.figure() bbox_to_anchor=(1.05, 1), loc='upper left',
-    axR.annotate("ice {0}".format(ice), xy=(0.7,0.8), fontsize=14,xycoords='axes fraction', horizontalalignment='left')
-    for nmem in range(4,20):
-        total = np.sum(bins[nmem])
-        if total > 0:
-            print(nmem)
-            axR.plot(range(*ra), binsw[nmem], label=f"{nmem}-member")
-    axR.set_xlim(*ra)
-    axR.yaxis.set_visible(False)
-    if ice == "V":
-        axR.legend(fontsize=12, bbox_to_anchor=(1.05, 1), loc='upper left')
-    if ice == "VII":
-        axR.set_xlabel(r"Interaction Energy / kJ mol$^{-1}}$", fontsize=14)
-    else:
-        axR.xaxis.set_visible(False)
-plt.show()
-fig.savefig("FigureS3.pdf", bbox_inches="tight")
+for a,b in sumw_center:
+    weight = sumw_center[a,b]
+    palette = int((weight+1)*30)
+    if palette < 0:
+        palette = 0
+    elif palette >= 90:
+        palette = 89
+    s += yap.Color(palette + 10)
+    pa = rcom[a]
+    pb = rcom[b]
+    d = pb - pa
+    d -= np.floor(d+0.5)
+    s += yap.Line(pa@cellmat, (pa+d)@cellmat)
+
+with open("FigureS2.yap", "w") as f:
+    f.write(s)

@@ -1,107 +1,125 @@
 """
-CO-like crystal with random orientation.
+Molecule-cycle interactions of molecules of different arrangements.
 """
+
 from mpl_toolkits.axes_grid.inset_locator import inset_axes
-import matplotlib
-matplotlib.rc('pdf', fonttype=42)
-matplotlib.rc('font',**{'family':'sans-serif','sans-serif':['Helvetica'],'size':18})
 import matplotlib.cm as cm
-from scipy.interpolate import interp1d
+import glob
 from matplotlib import pyplot as plt
 import numpy as np
+from collections import defaultdict
+from ice7analysis import *
+
+# fig, ax = plt.subplots(1,3)
+fig  = plt.figure(figsize=(7,20))
+linear = np.linspace(2.5,13.5,1000)
+
+import pickle
 
 
-# NN distance is 1
-DL = np.array([[0,0,0],[0,1,1],[1,1,0],[1,0,1]], dtype=float) / 2**0.5
-DA = np.array([[+1,+1,+1],[+1,-1,+1],[-1,+1,+1],[+1,+1,-1],], dtype=float) / (3**0.5*3)
-
-def CO_crystal(N):
-    coms = []
-    oris = []
-    for x in range(N):
-        for y in range(N):
-            for z in range(N):
-                origin = np.array([x,y,z], dtype=float) * 2**0.5
-                for i in range(4):
-                    coms.append(origin + DL[i])
-                    oris.append(DA[i])
-    return np.array(coms), np.array(oris)
-
-NN=8
-coms, oris = CO_crystal(NN)
-cell = np.array([NN,NN,NN], dtype=float) * 2**0.5
-cellmat = np.diag(cell)
-coms /= cell # relative
-
-equalspacing = np.linspace(0, NN/2, 1000)
-
-oSs = np.zeros_like(equalspacing)
-oSss = np.zeros_like(equalspacing)
-cnt = 0
-
-fig = plt.figure()
-
-d_e = []
+ices = [
+        ["V", "5"], #22
+        ["III", "3"], #10
+        ["VI", "6"], #6
+        ["empty sI", "CS1"], #6?
+        ["XVI", "16"], #4?
+        ["Ih", "1h"], #2
+        ["VII", "7"], #1
+        ["Ic", "1c"], #1
+        ["2D", "2D2"], #2
+]
+grid = plt.GridSpec(len(ices), 3, height_ratios=[7]*len(ices), width_ratios=[1, 3, 1], wspace=0, hspace=0)
 
 
-for i in range(400):
-    center = 0
-    d = coms - coms[0]
-    d -= np.floor(d + 0.5)
-    D = d @ cellmat
-    L = np.linalg.norm(D, axis=1)
-    D1 = D + oris
-    D2 = D - oris
-    R  = np.random.randint(2, size=coms.shape[0])*2-1 # +1/-1
-    R[0] = +1 # always
-    I = R[0]*R / np.linalg.norm(D1[0] - D1, axis=1)
-    I+=-R[0]*R / np.linalg.norm(D2[0] - D1, axis=1)
-    I+= R[0]*-R / np.linalg.norm(D1[0] - D2, axis=1)
-    I+=-R[0]*-R / np.linalg.norm(D2[0] - D2, axis=1)
-    order = np.argsort(L)
-    I[0] = 0
-    oL = L[order]
-    oI = I[order]
-    oS = np.cumsum(oI)
-    for j in range(oSs.shape[0]):
-        v = oS[oL < equalspacing[j]]
-        if v.shape[0] > 0:
-            v = v[-1]
-        else:
-            v = 0
-        oSs[j] = v
-        oSss[j] += v**2
-    cnt += 1
-    # steppify
-    y = interp1d(oL, oS, kind='previous')
-    d_e.append(y)
+linear = np.linspace(0.0,20,1000)
 
-# 距離1.1でのエネルギーの値でソートする。
+for panel, (ice, num) in enumerate(ices):
+    ra = [-180, -120]
+    main_ax = fig.add_subplot(grid[panel,1], xticks=[0,6,12])
+    hist0   = fig.add_subplot(grid[panel,0], xticklabels=[], sharey=main_ax, yticks=(-180,-160,-140))
+    hist13  = fig.add_subplot(grid[panel,2], xticklabels=[], sharey=main_ax)
 
-N = len(d_e)
-e4 = np.zeros(N)
-for i, y in enumerate(d_e):
-    e4[i] = y(1.1)
-order = np.argsort(e4)
-redro = [0]*N
-for i in range(N):
-    redro[order[i]] = i
-for i in range(N):
-    j = redro[i]
-    plt.plot(equalspacing, d_e[i](equalspacing), color=cm.coolwarm(j/N), lw=0.5)
+    # 配向ごとに別個のd_eを準備する。
+    d_e = defaultdict(list)
+
+    for cycle5stat in glob.glob(f"{num}-*.cycles5stat.pickle"):
+        with open(cycle5stat, "rb") as f:
+            d_e_elem = pickle.load(f)
+        for ori in d_e_elem:
+            d_e[ori] += d_e_elem[ori]
+
+    print(ice, len(d_e))
+    for ori in d_e:
+        acc,sd,cnt = stepgraph(d_e[ori], linear)
+        bandplot1(linear,acc,sd, plt=main_ax, label=f"{ori}")
+        # print(ori, sd[1], sd[-1])
+        e13 = []
+        for d,e in d_e[ori]:
+            e13.append(e[d<13][-1])
+        H = np.histogram(e13, bins=40, range=(-180, -100))
+        hist13.plot(H[0], (H[1][1:]+H[1][:-1])/2, label=f"{ori}") #normed=True, histtype="step",
+
+        e0 = []
+        for d,e in d_e[ori]:
+            e0.append(e[d>0][0])
+        H = np.histogram(e0, bins=40, range=(-180, -100))
+        hist0.plot(H[0], (H[1][1:]+H[1][:-1])/2, label=f"{ori}") #normed=True, histtype="step",
+
+    main_ax.set_xlabel("Distance / 0.1 nm",fontsize=18)
+    main_ax.set_xlim(0,13)
+    main_ax.label_outer()
+    main_ax.set_ylim(ra)
+    nori = len(d_e)
+    if ice == "2D":
+        name = f"{ice} ice ({nori})"
+    elif num == "CS1":
+        name = f"{ice} ({nori})"
+    else:
+        name = f"ice {ice} ({nori})"
+    main_ax.annotate(name, xy=(0.95,0.8), fontsize=18,xycoords='axes fraction', horizontalalignment='right')
+    main_ax.tick_params(labelsize=14)
+
+    if num == "3":
+        d_e = defaultdict(list)
+        with open("9.cycles5stat.pickle", "rb") as f:
+            d_e_elem = pickle.load(f)
+        for ori in d_e_elem:
+            d_e[ori] += d_e_elem[ori]
+        for ori in d_e:
+            acc,sd,cnt = stepgraph(d_e[ori], linear)
+            main_ax.plot(linear, acc, "k-")
+#             bandplot1(linear,acc,sd, plt=main_ax, label=f"{ori}")
+#             print(ori, sd[1], sd[-1])
+#             e13 = []
+#             for d,e in d_e[ori]:
+#                 e13.append(e[d<13][-1])
+#             H = np.histogram(e13, bins=40, range=(-180, -100))
+#             hist13.plot(H[0], (H[1][1:]+H[1][:-1])/2, label=f"{ori}") #normed=True, histtype="step",
+
+#             e0 = []
+#             for d,e in d_e[ori]:
+#                 e0.append(e[d>0][0])
+#             H = np.histogram(e0, bins=40, range=(-180, -100))
+#             hist0.plot(H[0], (H[1][1:]+H[1][:-1])/2, label=f"{ori}") #normed=True, histtype="step",
 
 
-plt.xlabel("Distance")
-plt.ylabel("Cumulative Interaction")
-plt.xlim(0,NN/2)
-fig.savefig("FigureS6.pdf", bbox_inches='tight')
+    # left
+    if panel==len(ices)//2:
+        hist0.set_ylabel(r"$I_i^c(r)$" + r" / kJ mol$-1$", fontsize=18)
+    #    hist0.fill(HH[0,:], ygauge, color=cm.viridis(panel/4))
+    #     ixmax = np.argmin(np.abs(xgauge-xmax))
+    #     hist0.plot(HH[ixmax,:], ygauge, 'k-', lw=0.5)
+
+    hist0.invert_xaxis()
+    hist0.set_xlim(None,0)
+    hist0.set_ylim(ra)
+    hist0.tick_params(labelsize=14)
+
+    # right
+    #     hist13.fill(HH[-1,:], ygauge, color=cm.viridis(panel/4))
+    hist13.set_xlim(0,None)
+    hist13.label_outer()
+    hist13.set_ylim(ra)
+
 plt.show()
-oSs /= cnt
-oSss /= cnt
-SD = (oSss - oSs**2)**0.5
-fig = plt.figure()
-plt.plot(equalspacing, SD)
-plt.xlabel("Distance")
-plt.ylabel("SD of Cumulative Interaction")
-plt.xlim(0,NN/2)
-fig.savefig("CO-SD.pdf", bbox_inches='tight')
+fig.savefig("FigureS5.pdf", bbox_inches="tight")
