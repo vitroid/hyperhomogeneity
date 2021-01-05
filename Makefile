@@ -118,3 +118,5 @@ FigureS5.pdf: FigureS5.py
 ########## Sync
 sync:
 	rsync -av q r *.repr.pickle 192.168.3.3:/r7/matto/hyperhomogeneity/
+syncback:
+	rsync -av --include="*/" --include="*.pdf" --include="*.svg" --include="*.yap" --exclude="*" bluebird1.local:/r7/matto/hyperhomogeneity/* /Volumes/workarea/work/hyperhomogeneity
