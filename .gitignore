@@ -16,3 +16,8 @@ __pycache__/
 unused/
 
 *.png
+
+
+*~
+
+*.nx3a

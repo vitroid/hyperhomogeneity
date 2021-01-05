@@ -33,6 +33,8 @@ fmodules: $(patsubst %.f95, %.cpython-37m-darwin.so, $(wildcard *.f95))
 %.cycles5stat.pickle: q/%.q.nx3a %.repr.pickle %.cycles5.pickle
 	$(PYTHON) cycles5stat.py $^ $@
 
+%.png: %.pdf
+	inkscape $< -o $@
 
 #ices.%:
 #	for ice in 1h 3 5 6 7; do ls q/$$ice-1000.q.nx3a | sed -e "s/q.nx3a/$*/g" -e "s:q/::g"; done | xargs make -j 32 -k
