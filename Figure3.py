@@ -1,3 +1,7 @@
+"""
+Comparison of the cumulative interactions on a molecular- and cycle-basis.
+"""
+
 from ice7analysis import *
 from matplotlib import pyplot as plt
 import pickle

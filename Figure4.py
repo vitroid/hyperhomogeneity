@@ -89,4 +89,4 @@ for panel, (lay, layerlabel) in enumerate(layerlabels):
     if panel==2:
         main_ax.set_ylabel(r"$I_i(r)$"+r" / kJ mol$-1$", fontsize=18)
 
-fig.savefig("Figure4.pdf", bbox_inches="tight")
+fig.savefig("FigureS4.pdf", bbox_inches="tight")

@@ -68,7 +68,7 @@ def cycle_energy(cycle, center, rcom, cellmat, waters, dg):
 with open(sys.argv[2], "rb") as f:
     repr = pickle.load(f)
 
-# 配向ごとに別個のd_eを準備する。
+# distance-energy pairs for different arrangements
 d_e = defaultdict(list)
 
 coord = sys.argv[1]
@@ -87,10 +87,10 @@ charges = tip4picecharges()
 
 dg = hbn(rcom, cellmat, R, water)
 
-# 分子内座標
+# Intramolecular coordinates
 waters = water @ R
 
-# cycle5 同向環での重複あり被覆、重みつき
+# .cycles5.pickle; Cycles and weights
 bucket = pickle.load(open(sys.argv[3], "rb"))
 cycles_raw = bucket["cycles"]
 weight     = bucket["weight"]
@@ -114,11 +114,8 @@ for center in range(0,Nmol,1):
     ds = np.array(ds)
     order = np.argsort(ds)
     eps = np.array(eps)
-    # plt.plot(ds[order],np.cumsum(eps[order]), label=label)
-    # print(np.cumsum(eps[order])[-1])
     d_e[ori].append([ds[order],np.cumsum(eps[order])])
 
-# とりあえず使いみちは考えずに全部保存する。
 if len(sys.argv) > 4:
     with open(sys.argv[4], "wb") as f:
         pickle.dump(d_e, f)

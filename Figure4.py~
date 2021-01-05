@@ -1,0 +1,39 @@
+"""
+Interactions with cycles.
+"""
+
+
+from mpl_toolkits.axes_grid.inset_locator import inset_axes
+import matplotlib.cm as cm
+from matplotlib import rc
+from matplotlib import pyplot as plt
+from ice7analysis import *
+
+import pickle
+
+layerlabels = [(0,"top layer"), (1,"2nd"), (3,"4th"), (7,"8th")]
+
+for panel, (lay, layerlabel) in enumerate(layerlabels):
+    if panel == 0:
+        ra = (-120,-50)
+    elif panel == 1:
+        ra = (-140, -70)
+    else:
+        ra = (-150,-80)
+    bot = (lay <= layer) & (layer < lay+1)
+    top = ((31-lay) <= layer) & (layer < (32-lay))
+    surface = top | bot
+    print(lay, np.nonzero(surface))
+
+
+    d_e = accum0(comeus, cellmat, np.nonzero(surface)[0], maxdist=13.2)
+    N = len(d_e)
+
+
+
+    acc,sd,cnt = stepgraph(d_e, linear)
+
+    if panel==2:
+        main_ax.set_ylabel(r"$I_i(r)$"+r" / kJ mol$-1$", fontsize=18)
+
+fig.savefig("Figure4.pdf", bbox_inches="tight")

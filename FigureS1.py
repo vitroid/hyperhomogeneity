@@ -1,3 +1,6 @@
+"""
+CO-like crystal with random orientation.
+"""
 from mpl_toolkits.axes_grid.inset_locator import inset_axes
 import matplotlib
 matplotlib.rc('pdf', fonttype=42)

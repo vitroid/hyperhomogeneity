@@ -1,3 +1,7 @@
+"""
+Record the cumulative Coulomb interaction on a molecule-basis.
+"""
+
 from ice7analysis import *
 import pickle
 import sys

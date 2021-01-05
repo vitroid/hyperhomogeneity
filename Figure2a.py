@@ -1,3 +1,7 @@
+"""
+molecular view of a model 2D ice 
+"""
+
 import random
 import numpy as np
 from icegraph import ice_graph

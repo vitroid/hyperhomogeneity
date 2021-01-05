@@ -1,3 +1,7 @@
+"""
+Hyperhomogeneity
+"""
+
 from mpl_toolkits.axes_grid.inset_locator import inset_axes
 import matplotlib.cm as cm
 from ice7analysis import *

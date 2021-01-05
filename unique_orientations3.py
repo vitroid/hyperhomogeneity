@@ -1,5 +1,5 @@
 """
-Find the crystallographically identical molecular arrangements in a crystal.
+Find the crystallographically identical molecular arrangements in the ice lattice.
 """
 
 import sys
@@ -45,6 +45,7 @@ def match_pointcloud(p1, p2, thres=0.8):
         return err
 
     assert p1.shape[0] <= p2.shape[0]
+    # Mirror the template.0=None 1=x 2=xy 3=y
     bestm = -1
     beste = 9999
     err0 =  match(p1, p2, thres**2)
