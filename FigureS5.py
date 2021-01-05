@@ -7,22 +7,22 @@ from collections import defaultdict
 from ice7analysis import *
 
 # fig, ax = plt.subplots(1,3)
-fig  = plt.figure(figsize=(5,14))
+fig  = plt.figure(figsize=(7,20))
 linear = np.linspace(2.5,13.5,1000)
 
 import pickle
 
 
 ices = [
-        ["Ih", "1h"],
-        ["Ic", "1c"],
-        ["III", "3"],
-        ["V", "5"],
-        ["VI", "6"],
-        ["VII", "7"],
-        ["XVI", "16"],
-        ["empty sI", "CS1"],
-        ["2D", "2D2"],
+        ["V", "5"], #22
+        ["III", "3"], #10
+        ["VI", "6"], #6
+        ["empty sI", "CS1"], #6?
+        ["XVI", "16"], #4?
+        ["Ih", "1h"], #2
+        ["VII", "7"], #1
+        ["Ic", "1c"], #1
+        ["2D", "2D2"], #2
 ]
 grid = plt.GridSpec(len(ices), 3, height_ratios=[7]*len(ices), width_ratios=[1, 3, 1], wspace=0, hspace=0)
 
@@ -65,37 +65,25 @@ for panel, (ice, num) in enumerate(ices):
     main_ax.set_xlim(0,13)
     main_ax.label_outer()
     main_ax.set_ylim(ra)
+    nori = len(d_e)
     if ice == "2D":
-        name = f"{ice} ice"
+        name = f"{ice} ice ({nori})"
     elif num == "CS1":
-        name = f"{ice}"
+        name = f"{ice} ({nori})"
     else:
-        name = f"ice {ice}"
+        name = f"ice {ice} ({nori})"
     main_ax.annotate(name, xy=(0.95,0.8), fontsize=18,xycoords='axes fraction', horizontalalignment='right')
     main_ax.tick_params(labelsize=14)
 
-    if num == "3":
-        d_e = defaultdict(list)
-        with open("9.cycles5stat.pickle", "rb") as f:
-            d_e_elem = pickle.load(f)
-        for ori in d_e_elem:
-            d_e[ori] += d_e_elem[ori]
-        for ori in d_e:
-            acc,sd,cnt = stepgraph(d_e[ori], linear)
-            main_ax.plot(linear, acc, "k-")
-#             bandplot1(linear,acc,sd, plt=main_ax, label=f"{ori}")
-#             print(ori, sd[1], sd[-1])
-#             e13 = []
-#             for d,e in d_e[ori]:
-#                 e13.append(e[d<13][-1])
-#             H = np.histogram(e13, bins=40, range=(-180, -100))
-#             hist13.plot(H[0], (H[1][1:]+H[1][:-1])/2, label=f"{ori}") #normed=True, histtype="step",
-
-#             e0 = []
-#             for d,e in d_e[ori]:
-#                 e0.append(e[d>0][0])
-#             H = np.histogram(e0, bins=40, range=(-180, -100))
-#             hist0.plot(H[0], (H[1][1:]+H[1][:-1])/2, label=f"{ori}") #normed=True, histtype="step",
+    #if num == "3":
+    #    d_e = defaultdict(list)
+    #    with open("9.cycles5stat.pickle", "rb") as f:
+    #        d_e_elem = pickle.load(f)
+    #    for ori in d_e_elem:
+    #        d_e[ori] += d_e_elem[ori]
+    #    for ori in d_e:
+    #        acc,sd,cnt = stepgraph(d_e[ori], linear)
+    #        main_ax.plot(linear, acc, "k-")
 
 
     # left

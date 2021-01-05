@@ -4,7 +4,7 @@ import sys
 
 
 linear = np.linspace(3, 13, 501)
-ra = (-200,-40)
+ra = (-220,-20)
 binw = 0.5
 nbin = int((ra[1] -ra[0])/binw)
 values = np.linspace(ra[0], ra[1], nbin+1)

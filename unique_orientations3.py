@@ -1,6 +1,6 @@
-# 参照構造の、uniqueな分子方向を列挙する。
-# 出力するものは、等価な三つ組の全リスト。
-# パターンマッチのテンプレートに使うもの。
+"""
+Find the crystallographically identical molecular arrangements in a crystal.
+"""
 
 import sys
 from ice7analysis import *
@@ -20,8 +20,6 @@ RR = np.zeros([Nmol,3,3])
 for i in range(Nmol):
     e = comeus[i,3:6]
     RR[i] = quat2rotmat(euler2quat(e))
-# 早い段階でrposとRに還元し、以降はこれしか使わない。
-# 田中構造と密度をあわせておかないと失敗するぞ。
 
 
 water = tip4picesites()
@@ -32,10 +30,7 @@ g = nx.Graph(hbn(Rrpos, Rcellmat, RR, water))
 from match import match
 
 def match_pointcloud(p1, p2, thres=0.8):
-    # これが99.9%時間を食う。
     def _match(qS,qL,thres2):
-        #数が少ないので、力技で照合する?
-        #小さいほうの点集合が大きいほうのいずれかに一致すればいい。
         err = 0
         for i,x in enumerate(qS):
             found = False
@@ -45,14 +40,11 @@ def match_pointcloud(p1, p2, thres=0.8):
                     found = True
                     err += d@d
                     break
-            # print(i,jmin,dmin,qS[i], qL[jmin])
             if not found:
                 return -1
         return err
 
     assert p1.shape[0] <= p2.shape[0]
-    # 原点の水分子の向きはあわせてある。ただし、x, y方向の鏡映も考慮すべき。
-    # テンプレートのほうを反転する。0=反転なし 1=x 2=xy 3=y反転
     bestm = -1
     beste = 9999
     err0 =  match(p1, p2, thres**2)

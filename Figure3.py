@@ -72,7 +72,7 @@ for ice, basename, ax in ices:
         r1 = linear[i1]
         v1 = smooth(sd)[i1]
         print(f"{ice} r_1 {r1}")
-        ax2.plot([r1,r1],[0,v1], color='gray')
+        # ax2.plot([r1,r1],[0,v1], color='gray')
 
 
         d_e = []
@@ -142,7 +142,7 @@ for ice, basename, ax in ices:
         r1 = linear[linear>3.5][i1]
         v1 = smooth(sd[linear>3.5])[i1]
         print(f"{ice} r_1 {r1}")
-        ax.plot([r1,r1],[0,v1], color='gray')
+        # ax.plot([r1,r1],[0,v1], color='gray')
 
 
 #         assert False, "遅すぎるので,cycleintr.pickleを使え。"
