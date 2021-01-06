@@ -87,6 +87,6 @@ for panel, (lay, layerlabel) in enumerate(layerlabels):
     acc,sd,cnt = stepgraph(d_e, linear)
 
     if panel==2:
-        main_ax.set_ylabel(r"$I_i(r)$"+r" / kJ mol$-1$", fontsize=18)
+        main_ax.set_ylabel(r"$I_i(r)$"+r" / kJ mol$^{-1}$", fontsize=18)
 
 fig.savefig("FigureS4.pdf", bbox_inches="tight")
