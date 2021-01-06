@@ -92,7 +92,7 @@ for panel, (ice, num) in enumerate(ices):
 
     # left
     if panel==len(ices)//2:
-        hist0.set_ylabel(r"$I_i^c(r)$" + r" / kJ mol$-1$", fontsize=18)
+        hist0.set_ylabel(r"$I_i^c(r)$" + r" / kJ mol$^{-1}$", fontsize=18)
     #    hist0.fill(HH[0,:], ygauge, color=cm.viridis(panel/4))
     #     ixmax = np.argmin(np.abs(xgauge-xmax))
     #     hist0.plot(HH[ixmax,:], ygauge, 'k-', lw=0.5)
