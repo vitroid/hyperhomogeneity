@@ -113,7 +113,7 @@ for panel, (ice, basename) in enumerate(ices):
             axR.plot(range(*ra),
                      binsw[nmem],
                      label=f"{nmem}-member",
-                     color=cm.hsv((nmem-4)/(17-4)))
+                     color=cm.hsv(nmem/17))
     axR.set_xlim(*ra)
     axR.yaxis.set_visible(False)
     if ice == "V":
