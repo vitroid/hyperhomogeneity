@@ -73,7 +73,7 @@ for panel, (ice, ra) in enumerate([["1h", [-150,-80]],
     main_ax.tick_params(labelsize=14)
 
     if ice == "1h":
-        coord11, cell11 = load_nx3a(open("11.nx3a"))
+        coord11, cell11 = load_nx3a(open("q/11.q.nx3a"))
         cellmat11 = np.diag(cell11)
         rpos11 = coord11[:, :3]
         d_e11 = accum0(coord11, cellmat11, range(2), maxdist=13.2)

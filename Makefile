@@ -68,7 +68,7 @@ everything: ices.hist.pickle extend.cycles5.pickle ices.cyclesintr.pickle \
 	$(PYTHON) histogram.py $< $@
 
 # Figure 1: Overview of the phenomenon.
-Figure1.pdf: Figure1.py
+Figure1.pdf: Figure1.py q/11.q.nx3a
 	-make ices.hist.pickle
 	$(PYTHON) Figure1.py
 
