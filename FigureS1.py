@@ -1,7 +1,7 @@
 """
 CO-like crystal with random orientation.
 """
-from mpl_toolkits.axes_grid.inset_locator import inset_axes
+# from mpl_toolkits.axes_grid.inset_locator import inset_axes
 import matplotlib
 matplotlib.rc('pdf', fonttype=42)
 matplotlib.rc('font',**{'family':'sans-serif','sans-serif':['Helvetica'],'size':18})
@@ -44,22 +44,28 @@ fig = plt.figure()
 d_e = []
 
 
-for i in range(400):
-    center = 0
-    d = coms - coms[0]
+# random orientation
+while True:
+    R  = np.random.randint(2, size=coms.shape[0])*2-1 # +1/-1
+    netpol = np.sum(R @ oris, axis=0)
+    if np.allclose(netpol, np.zeros(3)):
+        print("Zero net dipole")
+        break
+
+for center in range(400):
+    d = coms - coms[center]
     d -= np.floor(d + 0.5)
     D = d @ cellmat
     L = np.linalg.norm(D, axis=1)
     D1 = D + oris
     D2 = D - oris
-    R  = np.random.randint(2, size=coms.shape[0])*2-1 # +1/-1
-    R[0] = +1 # always
-    I = R[0]*R / np.linalg.norm(D1[0] - D1, axis=1)
-    I+=-R[0]*R / np.linalg.norm(D2[0] - D1, axis=1)
-    I+= R[0]*-R / np.linalg.norm(D1[0] - D2, axis=1)
-    I+=-R[0]*-R / np.linalg.norm(D2[0] - D2, axis=1)
+    # R[0] = +1 # always
+    I = R[center]*R / np.linalg.norm(D1[center] - D1, axis=1)
+    I+=-R[center]*R / np.linalg.norm(D2[center] - D1, axis=1)
+    I+= R[center]*-R / np.linalg.norm(D1[center] - D2, axis=1)
+    I+=-R[center]*-R / np.linalg.norm(D2[center] - D2, axis=1)
     order = np.argsort(L)
-    I[0] = 0
+    I[center] = 0
     oL = L[order]
     oI = I[order]
     oS = np.cumsum(oI)
