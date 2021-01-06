@@ -95,7 +95,7 @@ for panel, (ice, basename) in enumerate(ices):
         total = np.sum(bins[nmem])
         if total > 0:
             print(nmem)
-            axL.plot(range(*ra), bins[nmem] / (total*binw), label=f"{nmem}-member", color=cm.hsv((nmem-4)/(17-4)))
+            axL.plot(range(*ra), bins[nmem] / (total*binw), label=f"{nmem}-member", color=cm.hsv(nmem/17))
     axL.set_xlim(*ra)
     axL.yaxis.set_visible(False)
     if ice == "VII":

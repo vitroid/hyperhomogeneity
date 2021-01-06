@@ -10,6 +10,7 @@ from scipy.interpolate import interp1d
 from matplotlib import pyplot as plt
 import numpy as np
 
+np.random.seed(1)
 
 # NN distance is 1
 DL = np.array([[0,0,0],[0,1,1],[1,1,0],[1,0,1]], dtype=float) / 2**0.5
@@ -44,7 +45,7 @@ fig = plt.figure()
 d_e = []
 
 
-# random orientation
+# Make random orientations and guarantee the zero net polarization
 while True:
     R  = np.random.randint(2, size=coms.shape[0])*2-1 # +1/-1
     netpol = np.sum(R @ oris, axis=0)
