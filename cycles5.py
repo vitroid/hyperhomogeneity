@@ -1,38 +1,26 @@
 """
 cycles5
 
-あらかじめ小さいすべての環を列挙して、それで特異値分解して有向グラフを環の線形和にする。
+Colculate the weights for cycles using SVD.
 """
 from ice7analysis import *
 import pickle
 import sys
 import random
 from cycless.dicycles import dicycles_iter
+import scipy.sparse.linalg
 
-
-# Quasi-inversion of a matrix.
+# Pseudo-inversion of a matrix.
 def AtoX(A):
-    # 環の個数のほうが十分多い場合の近似
-    # 特異値分解
     Q1, S, Q2T = np.linalg.svd(A)
-    # print(Q1.shape, S.shape, Q2T.shape)
-    # ほぼ0の要素を0にする
     S[np.abs(S)<1e-12] = 0
     rank = np.sum(np.abs(S) > 0)
-    # print(S,r)
-    # SS = Q1.T @ A @ Q2T.T
-    # 対角行列S†の準備
     Sd = np.zeros_like(A).T
     Sd[:rank, :rank] = np.diag(1/S[:rank])
-    # print(SS)
-    # print(Sd.shape)
     # A†
     Ad = Q2T.T @ Sd @ Q1.T
-    #print(Ad.shape)
     b = np.ones(A.shape[0])
-    x = Ad@b
-    # print(A@x)
-    # print(x)
+    x = Ad @ b
     return x, rank
 
 
