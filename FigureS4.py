@@ -99,7 +99,7 @@ for panel, (ice, basename) in enumerate(ices):
     axL.set_xlim(*ra)
     axL.yaxis.set_visible(False)
     if ice == "VII":
-        axL.set_xlabel(r"Coulomb Interaction / kJ mol$^{-1}}$", fontsize=14)
+        axL.set_xlabel(r"Coulombic Interaction / kJ mol$^{-1}}$", fontsize=14)
     else:
         axL.xaxis.set_visible(False)
 
@@ -119,7 +119,7 @@ for panel, (ice, basename) in enumerate(ices):
     if ice == "V":
         axR.legend(fontsize=12, bbox_to_anchor=(1.05, 1), loc='upper left')
     if ice == "VII":
-        axR.set_xlabel(r"Coulomb Interaction / kJ mol$^{-1}}$", fontsize=14)
+        axR.set_xlabel(r"Coulombic Interaction / kJ mol$^{-1}}$", fontsize=14)
     else:
         axR.xaxis.set_visible(False)
 plt.show()

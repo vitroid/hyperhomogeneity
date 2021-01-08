@@ -139,7 +139,7 @@ for ice, basename, ax, r1 in ices:
     if ice == "Ih":
         ax.legend(fontsize=12)
     if ice == "VII":
-        ax.set_xlabel(r"Interaction Energy / kJ mol$^{-1}}$", fontsize=18)
+        ax.set_xlabel(r"Coulombic Interaction / kJ mol$^{-1}}$", fontsize=18)
 
     # dists = None
     # for seed in range(1000,1030):

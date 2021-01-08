@@ -77,7 +77,7 @@ for panel, (lay, layerlabel) in enumerate(layerlabels):
         main_ax.plot(linear, avg, color=cm.coolwarm(j/N), lw=0.5)
 
     # center panel
-    main_ax.set_xlabel("Distance / 0.1 nm",fontsize=18)
+    main_ax.set_xlabel(r"$r$ / 0.1 nm",fontsize=18)
     main_ax.set_xlim(3,13)
     main_ax.label_outer()
     main_ax.set_ylim(ra)

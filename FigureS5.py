@@ -65,7 +65,7 @@ for panel, (ice, num) in enumerate(ices):
         H = np.histogram(e0, bins=40, range=(-180, -100))
         hist0.plot(H[0], (H[1][1:]+H[1][:-1])/2, label=f"{ori}") #normed=True, histtype="step",
 
-    main_ax.set_xlabel("Distance / 0.1 nm",fontsize=18)
+    main_ax.set_xlabel(r"$r$ / 0.1 nm",fontsize=18)
     main_ax.set_xlim(0,13)
     main_ax.label_outer()
     main_ax.set_ylim(ra)

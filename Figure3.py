@@ -69,8 +69,8 @@ for ice, basename, ax in ices:
         ax2.set_xlim(0,13)
         ax2.set_ylim(0,16)
         ax2.set_yticks([0,10])
-        ax2.set_xlabel("Distance / 0.1 nm",fontsize=14)
-        ax2.set_ylabel("SD",fontsize=14)
+        ax2.set_xlabel(r"$r$ / 0.1 nm",fontsize=14)
+        ax2.set_ylabel(r"$sigma(r)$",fontsize=14)
         ax2.plot(linear, smooth(sd))
         i1 = np.argmax(smooth(sd))
         r1 = linear[i1]
@@ -117,8 +117,8 @@ for ice, basename, ax in ices:
 
         #plt.ylim(-150,-130)
         #plt.legend()
-        ax.set_xlabel("Distance / 0.1 nm",fontsize=18)
-        ax.set_ylabel(r"Coulomb interaction / kJ mol$^{-1}$",fontsize=18)
+        ax.set_xlabel(r"$r$ / 0.1 nm",fontsize=18)
+        ax.set_ylabel(r"$I(r)$" + " and " + r"$I^c(r)$" + r" / kJ mol$^{-1}$",fontsize=18)
     else:
         # 先に、分子単位での積算。
 
@@ -126,7 +126,7 @@ for ice, basename, ax in ices:
         acc,sd,cnt = stepgraph(d_e, linear)
 
         ax.set_xlim(0.0,13)
-        ax.set_xlabel("Distance / 0.1 nm",fontsize=14)
+        ax.set_xlabel(r"$r$ / 0.1 nm",fontsize=14)
         if ice == "Ih":
             ax.xaxis.tick_top()
             ax.xaxis.set_label_position('top')
@@ -139,7 +139,7 @@ for ice, basename, ax in ices:
         ax.set_yticks([0,10])
         if ice == "III":
             ax.yaxis.set_label_position('right')
-            ax.set_ylabel(r"SD / kJ mol$^{-1}$",fontsize=18)
+            ax.set_ylabel(r"$\sigma(r)$" + r" / kJ mol$^{-1}$",fontsize=18)
 
         ax.plot(linear, smooth(sd))
         i1 = np.argmax(smooth(sd[linear>3.5]))
