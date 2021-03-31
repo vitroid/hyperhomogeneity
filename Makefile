@@ -1,7 +1,9 @@
 ########## Preparations
-BASE=/net/jukebox4.local/u2/matto/venvs/hyperhomogeneity/bin
+BASE=/Volumes/workarea/venvs/hyperhomogeneity/bin#/net/jukebox4.local/u2/matto/venvs/hyperhomogeneity/bin
+BASE=/Users/matto/miniforge3/bin
 PIP=$(BASE)/pip3
 PYTHON=$(BASE)/python3
+INKSCAPE=/Applications/Inkscape.app/Contents/MacOS/inkscape
 
 prepare:
 	$(PIP) install pairlist vapory yaplotlib matplotlib numpy networkx scipy cycless
@@ -34,7 +36,9 @@ fmodules: $(patsubst %.f95, %.cpython-37m-darwin.so, $(wildcard *.f95))
 	$(PYTHON) cycles5stat.py $^ $@
 
 %.png: %.pdf
-	inkscape $< -o $@
+	$(INKSCAPE) $< -o $@
+pngs:
+	ls *.pdf | sed -e s/pdf/png/ | xargs make -j 4 -k
 
 #ices.%:
 #	for ice in 1h 3 5 6 7; do ls q/$$ice-1000.q.nx3a | sed -e "s/q.nx3a/$*/g" -e "s:q/::g"; done | xargs make -j 32 -k

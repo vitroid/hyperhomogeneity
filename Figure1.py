@@ -63,24 +63,24 @@ for panel, (ice, ra) in enumerate([["1h", [-150,-80]],
 
     convergence, xmax, ymax, ylast = conv[ice]
     # center panel
-    main_ax.set_xlabel("Distance / 0.1 nm")
+    main_ax.set_xlabel("Distance / 0.1 nm", fontsize=18)
     main_ax.set_xlim(3,13)
     main_ax.label_outer()
     main_ax.set_ylim(ra)
     main_ax.annotate("ice {0}".format(ice), xy=(0.95,0.8), fontsize=18,xycoords='axes fraction', horizontalalignment='right')
-    main_ax.annotate("c = {0:.1f}".format(convergence), xy=(0.95,0.6), fontsize=14,xycoords='axes fraction', horizontalalignment='right')
+    # main_ax.annotate("c = {0:.1f}".format(convergence), xy=(0.95,0.6), fontsize=14,xycoords='axes fraction', horizontalalignment='right')
     main_ax.plot([xmax, xmax], [0, -1000], "g-", lw=1.0)
     main_ax.tick_params(labelsize=14)
 
-    if ice == "1h":
-        coord11, cell11 = load_nx3a(open("q/11.q.nx3a"))
-        cellmat11 = np.diag(cell11)
-        rpos11 = coord11[:, :3]
-        d_e11 = accum0(coord11, cellmat11, range(2), maxdist=13.2)
-        N11 = len(d_e11)
-        for i in range(N11):
-            avg,sd,cnt = stepgraph(d_e11[i:i+1], linear) # single data
-            main_ax.plot(linear, avg, "k", lw=1.0)
+    # if ice == "1h":
+    #     coord11, cell11 = load_nx3a(open("q/11.q.nx3a"))
+    #     cellmat11 = np.diag(cell11)
+    #     rpos11 = coord11[:, :3]
+    #     d_e11 = accum0(coord11, cellmat11, range(2), maxdist=13.2)
+    #     N11 = len(d_e11)
+    #     for i in range(N11):
+    #         avg,sd,cnt = stepgraph(d_e11[i:i+1], linear) # single data
+    #         main_ax.plot(linear, avg, "k", lw=1.0)
 
 
 
@@ -96,7 +96,7 @@ for panel, (ice, ra) in enumerate([["1h", [-150,-80]],
 
     # left
     if panel==2:
-        hist3.set_ylabel(r"$I_i(r)$ / kJ mol$-1$")
+        hist3.set_ylabel(r"$I_i(r)$ / kJ mol$^{-1}$", fontsize=18)
     hist3.fill(HH[0,:], ygauge, color=cm.viridis(panel/4))
     ixmax = np.argmin(np.abs(xgauge-xmax))
     hist3.plot(HH[ixmax,:], ygauge, 'k-', lw=0.5)
