@@ -1,5 +1,5 @@
 """
-molecular view of a model 2D ice 
+molecular view of a model 2D ice
 """
 
 import random
@@ -85,5 +85,5 @@ zoom=50
 dwg = svgwrite.Drawing(size=(zoom*N,zoom*N))
 draw_mol_svg(dwg, g, zoom=zoom, N=N)
 svg = dwg.tostring()
-with open("Figure2a.svg", "w") as f:
+with open("Figure3a.svg", "w") as f:
     f.write(svg)

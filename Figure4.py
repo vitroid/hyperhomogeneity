@@ -1,92 +1,190 @@
 """
-Divergence of the interaction at the surface of ice.
+Comparison of the cumulative interactions on a molecular- and cycle-basis.
 """
 
-from mpl_toolkits.axes_grid.inset_locator import inset_axes
-import matplotlib.cm as cm
-
-
-
 from ice7analysis import *
+from matplotlib import pyplot as plt
+import pickle
+import glob
+from mpl_toolkits.axes_grid.inset_locator import (inset_axes, InsetPosition,
+                                                  mark_inset)
 
-basename = "1cs"
 
-coord = f"q/{basename}.q.nx3a"
-comeus, cell = load_nx3a(open(coord))
-cellmat = np.diag(cell)
-rcom = comeus[:,:3] @ np.linalg.inv(cellmat)
+fig  = plt.figure(figsize=(8,8))
+gs = plt.GridSpec(5,3)
 
-Nmol = len(comeus)
-R = np.zeros([Nmol,3,3])
-for i in range(Nmol):
-    e = comeus[i,3:6]
-    R[i] = quat2rotmat(euler2quat(e))
+ices = [["Ih", "1h", plt.subplot(gs[:1, -1:])],
+        ["III", "3", plt.subplot(gs[1:2, -1:])],
+        ["V", "5", plt.subplot(gs[2:3, -1:])],
+        ["VI", "6", plt.subplot(gs[3:4, -1:])],
+        ["VII", "7", plt.subplot(gs[:4, :2])]]
+
+
+plt.subplots_adjust(wspace=0, hspace=0)
+linear = np.linspace(0.0,20,1000)
 
 water = tip4picesites()
 charges = tip4picecharges()
+AA,BB = tip4piceLJ()
 
-dg = hbn(rcom, cellmat, R, water, icetest=False)
+every=5
 
-# 分子内座標
-waters = water @ R
+for ice, basename, ax in ices:
+    coord = f"q/{basename}-1000.q.nx3a"
+    comeus, cell = load_nx3a(open(coord))
+    cellmat = np.diag(cell)
+    rcom = comeus[:,:3] @ np.linalg.inv(cellmat)
 
-thick = cellmat[0,0]*2/32
-layer = np.floor((rcom@cellmat)[:,2] / thick + 0.5)
-print(layer)
+    Nmol = len(comeus)
+    R = np.zeros([Nmol,3,3])
+    for i in range(Nmol):
+        e = comeus[i,3:6]
+        R[i] = quat2rotmat(euler2quat(e))
 
-# fig, ax = plt.subplots(1,3)
-fig  = plt.figure(figsize=(5,10))
-grid = plt.GridSpec(4, 1, height_ratios=[7,7,7,7], wspace=0, hspace=0)
-linear = np.linspace(2.5,13.5,1000)
 
-import pickle
+    dg = hbn(rcom, cellmat, R, water)
 
-layerlabels = [(0,"top layer"), (1,"2nd"), (3,"4th"), (7,"8th")]
+    # 分子内座標
+    waters = water @ R
 
-for panel, (lay, layerlabel) in enumerate(layerlabels):
-    if panel == 0:
-        ra = (-120,-50)
-    elif panel == 1:
-        ra = (-140, -70)
+    # fig = plt.figure()
+    if ice == "VII":
+        # 先に、分子単位での積算。
+
+        d_e = accum0(comeus, cellmat, range(0,Nmol,every), LJ=(0.0,0.0))
+        acc,sd,cnt = stepgraph(d_e, linear)
+        bandplot1(linear,acc,smooth(sd), plt=ax, label="Molecule")
+
+        #plt.legend()
+        ax.set_xlim(0,13)
+        bottom = int(acc[-1]/10+0.5)*10
+        ax.set_ylim(bottom-20,bottom+30)
+
+
+        # SDをinset
+        ax2 = plt.subplot(gs[4:5, -1:])
+        # Manually set the position and relative size of the inset axes within ax1
+        ip = InsetPosition(ax, [0.5,0.75,0.5,0.25])
+        ax2.set_axes_locator(ip)
+        ax2.set_xlim(0,13)
+        ax2.set_ylim(0,16)
+        ax2.set_yticks([0,10])
+        ax2.set_xlabel(r"$r$ / 0.1 nm",fontsize=14)
+        ax2.set_ylabel(r"$sigma(r)$",fontsize=14)
+        ax2.plot(linear, smooth(sd))
+        i1 = np.argmax(smooth(sd))
+        r1 = linear[i1]
+        v1 = smooth(sd)[i1]
+        print(f"{ice} r_1 {r1}")
+        # ax2.plot([r1,r1],[0,v1], color='gray')
+
+
+        d_e = []
+        for cycles5 in glob.glob(f"{basename}-*.cycles5.pickle"):
+            with open(cycles5, "rb") as f: # non-quenched is ok
+                bucket = pickle.load(f)
+                cycles_raw = bucket["cycles"]
+                weights = bucket["weight"]
+            cyclesintr = cycles5.replace("cycles5", "cyclesintr")
+            print(cycles5)
+            with open(cyclesintr, "rb") as f:
+                intr, dist, mord = pickle.load(f)
+            for center in range(Nmol):
+                # cycle by cycle
+                eps = []
+                ds  = []
+                for c, (cycle, wei) in enumerate(zip(cycles_raw, weights)):
+                    ep = intr[center, c]
+                    d  = dist[center, c]
+                    eps.append(ep*wei)
+                    ds.append(d)
+
+                ds = np.array(ds)
+                order = np.argsort(ds)
+                eps = np.array(eps)
+                # plt.plot(ds[order],np.cumsum(eps[order]), label=label)
+                # print(np.cumsum(eps[order])[-1])
+                d_e.append([ds[order],np.cumsum(eps[order])])
+        if len(d_e) > 0:
+            acc,sd,cnt = stepgraph(d_e, linear)
+            bandplot1(linear,acc,smooth(sd), plt=ax, label=f"Cycle ({ice})")
+
+        # Create a set of inset Axes: these should fill the bounding box allocated to
+        # them.
+        ax2.annotate(f"ice {ice}", (0.6, 0.6), xycoords="axes fraction",fontsize=18)
+        ax2.plot(linear, smooth(sd))
+
+
+        #plt.ylim(-150,-130)
+        #plt.legend()
+        ax.set_xlabel(r"$r$ / 0.1 nm",fontsize=18)
+        ax.set_ylabel(r"$I(r)$" + " and " + r"$I^c(r)$" + r" / kJ mol$^{-1}$",fontsize=18)
     else:
-        ra = (-150,-80)
-    bot = (lay <= layer) & (layer < lay+1)
-    top = ((31-lay) <= layer) & (layer < (32-lay))
-    surface = top | bot
-    print(lay, np.nonzero(surface))
+        # 先に、分子単位での積算。
+
+        d_e = accum0(comeus, cellmat, range(0,Nmol,every), LJ=(0.0,0.0))
+        acc,sd,cnt = stepgraph(d_e, linear)
+
+        ax.set_xlim(0.0,13)
+        ax.set_xlabel(r"$r$ / 0.1 nm",fontsize=14)
+        if ice == "Ih":
+            ax.xaxis.tick_top()
+            ax.xaxis.set_label_position('top')
+        else:
+            # no tick no label
+            ax.xaxis.set_visible(False)
+
+        ax.set_ylim(0,16)
+        ax.yaxis.tick_right()
+        ax.set_yticks([0,10])
+        if ice == "III":
+            ax.yaxis.set_label_position('right')
+            ax.set_ylabel(r"$\sigma(r)$" + r" / kJ mol$^{-1}$",fontsize=18)
+
+        ax.plot(linear, smooth(sd))
+        i1 = np.argmax(smooth(sd[linear>3.5]))
+        r1 = linear[linear>3.5][i1]
+        v1 = smooth(sd[linear>3.5])[i1]
+        print(f"{ice} r_1 {r1}")
+        # ax.plot([r1,r1],[0,v1], color='gray')
 
 
-    d_e = accum0(comeus, cellmat, np.nonzero(surface)[0], maxdist=13.2)
-    N = len(d_e)
+#         assert False, "遅すぎるので,cycleintr.pickleを使え。"
 
+        d_e = []
+        for cycles5 in glob.glob(f"{basename}-*.cycles5.pickle"):
+            with open(cycles5, "rb") as f: # non-quenched is ok
+                bucket = pickle.load(f)
+                cycles_raw = bucket["cycles"]
+                weights = bucket["weight"]
+            cyclesintr = cycles5.replace("cycles5", "cyclesintr")
+            with open(cyclesintr, "rb") as f:
+                intr, dist, mord = pickle.load(f)
+            print(cycles5)
+            for center in range(Nmol):
+                # cycle by cycle
+                eps = []
+                ds  = []
+                for c, (cycle, wei) in enumerate(zip(cycles_raw, weights)):
+                    ep = intr[center, c]
+                    d  = dist[center, c]
+                    eps.append(ep*wei)
+                    ds.append(d)
 
-    main_ax = fig.add_subplot(grid[panel,0], xticks=[3,8,13], yticks=(-140,-100,-60,-20))
+                ds = np.array(ds)
+                order = np.argsort(ds)
+                eps = np.array(eps)
+                # plt.plot(ds[order],np.cumsum(eps[order]), label=label)
+                # print(np.cumsum(eps[order])[-1])
+                d_e.append([ds[order],np.cumsum(eps[order])])
+        if len(d_e) > 0:
+            acc,sd,cnt = stepgraph(d_e, linear)
+            ax.annotate(f"ice {ice}", (0.6, 0.6), xycoords="axes fraction",fontsize=18)
+            ax.plot(linear, smooth(sd))
+#             bandplot1(linear,acc,smooth(sd), plt=ax, label=f"Cycle ({ice})")
 
-    # 距離4でのエネルギーの値でソートする。
+        # Create a set of inset Axes: these should fill the bounding box allocated to
+        # them.
 
-    e4 = np.zeros(N)
-    for i, (d,e) in enumerate(d_e):
-        e4[i] = e[d<4.0][-1]
-    order = np.argsort(e4)
-    redro = np.zeros(N)
-    for i in range(N):
-        redro[order[i]] = i
-    for i in range(N):
-        j = redro[i]
-        avg,sd,cnt = stepgraph(d_e[i:i+1], linear) # single data
-        main_ax.plot(linear, avg, color=cm.coolwarm(j/N), lw=0.5)
-
-    # center panel
-    main_ax.set_xlabel(r"$r$ / 0.1 nm",fontsize=18)
-    main_ax.set_xlim(3,13)
-    main_ax.label_outer()
-    main_ax.set_ylim(ra)
-    main_ax.annotate(f"{layerlabel}", xy=(0.95,0.8), fontsize=18,xycoords='axes fraction', horizontalalignment='right')
-    main_ax.tick_params(labelsize=14)
-
-    acc,sd,cnt = stepgraph(d_e, linear)
-
-    if panel==2:
-        main_ax.set_ylabel(r"$I_i(r)$"+r" / kJ mol$^{-1}$", fontsize=18)
-
+# plt.show()
 fig.savefig("Figure4.pdf", bbox_inches="tight")

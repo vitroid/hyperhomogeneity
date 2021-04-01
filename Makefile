@@ -1,6 +1,7 @@
 ########## Preparations
 BASE=/Volumes/workarea/venvs/hyperhomogeneity/bin#/net/jukebox4.local/u2/matto/venvs/hyperhomogeneity/bin
-BASE=/Users/matto/miniforge3/bin
+# BASE=/Users/matto/miniforge3/bin
+BASE=/Users/matto/venvs/genice2arm3/bin
 PIP=$(BASE)/pip3
 PYTHON=$(BASE)/python3
 INKSCAPE=/Applications/Inkscape.app/Contents/MacOS/inkscape
@@ -70,6 +71,15 @@ everything: ices.hist.pickle extend.cycles5.pickle ices.cyclesintr.pickle \
 # Histogram of cumulative interactions on a molecule basis
 %.hist.pickle: q/%.q.nx3a
 	$(PYTHON) histogram.py $< $@
+
+# Interaction distribution with nearby molecules
+FigureA.pdf: FigureA.py # q/11.q.nx3a
+	-make ices.hist.pickle
+	$(PYTHON) FigureA.py
+
+FigureE.pdf: $(wildcard q/1cs*.q.nx3a) FigureE.py
+	$(PYTHON) FigureE.py
+
 
 # Figure 1: Overview of the phenomenon.
 Figure1.pdf: Figure1.py q/11.q.nx3a

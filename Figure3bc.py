@@ -1,5 +1,5 @@
 """
-cycle view of a model 2D ice 
+cycle view of a model 2D ice
 """
 
 
@@ -185,5 +185,5 @@ draw_arrows_svg(dwg, g)
 cycles, weights = cover_by_cycles(g, N*N)
 draw_cycles_svg(dwg, cycles)
 svg = dwg.tostring()
-with open("Figure2bc.svg", "w") as f:
+with open("Figure3bc.svg", "w") as f:
     f.write(svg)

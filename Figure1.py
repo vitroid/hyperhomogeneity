@@ -1,5 +1,7 @@
 """
-Hyperhomogeneity
+For resubmission
+
+Figure 1: Interaction distribution with nearby molecules.
 """
 
 from mpl_toolkits.axes_grid.inset_locator import inset_axes
@@ -8,8 +10,9 @@ from ice7analysis import *
 import glob
 
 # fig, ax = plt.subplots(1,3)
-fig  = plt.figure(figsize=(5,10))
-grid = plt.GridSpec(5, 3, width_ratios=[1, 3, 1], height_ratios=[7,7,7,7,11], wspace=0, hspace=0)
+fig  = plt.figure(figsize=(5,7))
+# fig  = plt.figure()
+grid = plt.GridSpec(4, 1, height_ratios=[7,7,7,7], wspace=0, hspace=0)
 linear = np.linspace(2.5,13.5,1000)
 
 import pickle
@@ -32,57 +35,21 @@ for line in """
     cols = line.split()
     conv[cols[0]] = [float(x) for x in cols[1:]]
 
+panels = [0]*4
+for i in range(4):
+    panels[i] = fig.add_subplot(grid[i,0]) #, xticks=[3,8,13])
 
-for panel, (ice, ra) in enumerate([["1h", [-150,-80]],
-                                         ["3",  [-150,-80]],
-                                         ["5",  [-150,-80]],
-                                         ["6",  [-150,-80]],
-                                         ["7",  [-130,-20]]]):
+ices = ["1h", "3", "5", "6", "7"]
+icef = ["1h", "3", "5m", "6m", "7"]
+ices = [x for x in ices[::-1]]
+icef = [x for x in icef[::-1]]
+for num, ice in enumerate(ices):
+    rel = num / (len(ices)-1)
     comeus, cell = load_nx3a(open(f"q/{ice}-1000.q.nx3a"))
     cellmat = np.diag(cell)
     d_e = accum0(comeus, cellmat, range(50), maxdist=13.2)
     N = len(d_e)
-
-    main_ax = fig.add_subplot(grid[panel,1], xticks=[3,8,13])
-    hist3   = fig.add_subplot(grid[panel,0], xticklabels=[], sharey=main_ax, yticks=(-140,-100,-60))
-    hist13  = fig.add_subplot(grid[panel,2], xticklabels=[], sharey=main_ax)
-
-    # 距離4でのエネルギーの値でソートする。
-
-    e4 = np.zeros(N)
-    for i, (d,e) in enumerate(d_e):
-        e4[i] = e[d<4.0][-1]
-    order = np.argsort(e4)
-    redro = np.zeros(N)
-    for i in range(N):
-        redro[order[i]] = i
-    for i in range(N):
-        j = redro[i]
-        avg,sd,cnt = stepgraph(d_e[i:i+1], linear) # single data
-        main_ax.plot(linear, avg, color=cm.coolwarm(j/N), lw=0.5)
-
-    convergence, xmax, ymax, ylast = conv[ice]
-    # center panel
-    main_ax.set_xlabel("Distance / 0.1 nm", fontsize=18)
-    main_ax.set_xlim(3,13)
-    main_ax.label_outer()
-    main_ax.set_ylim(ra)
-    main_ax.annotate("ice {0}".format(ice), xy=(0.95,0.8), fontsize=18,xycoords='axes fraction', horizontalalignment='right')
-    # main_ax.annotate("c = {0:.1f}".format(convergence), xy=(0.95,0.6), fontsize=14,xycoords='axes fraction', horizontalalignment='right')
-    main_ax.plot([xmax, xmax], [0, -1000], "g-", lw=1.0)
-    main_ax.tick_params(labelsize=14)
-
-    # if ice == "1h":
-    #     coord11, cell11 = load_nx3a(open("q/11.q.nx3a"))
-    #     cellmat11 = np.diag(cell11)
-    #     rpos11 = coord11[:, :3]
-    #     d_e11 = accum0(coord11, cellmat11, range(2), maxdist=13.2)
-    #     N11 = len(d_e11)
-    #     for i in range(N11):
-    #         avg,sd,cnt = stepgraph(d_e11[i:i+1], linear) # single data
-    #         main_ax.plot(linear, avg, "k", lw=1.0)
-
-
+    ra = [-150,-30]
 
     HH = None
     for file in glob.glob(f"{ice}-*.hist.pickle"):
@@ -95,27 +62,44 @@ for panel, (ice, ra) in enumerate([["1h", [-150,-80]],
             xgauge, ygauge = H2[1:]
 
     # left
-    if panel==2:
-        hist3.set_ylabel(r"$I_i(r)$ / kJ mol$^{-1}$", fontsize=18)
-    hist3.fill(HH[0,:], ygauge, color=cm.viridis(panel/4))
-    ixmax = np.argmin(np.abs(xgauge-xmax))
-    hist3.plot(HH[ixmax,:], ygauge, 'k-', lw=0.5)
+    # if panel==2:
+    for i, distance in enumerate((3, 6, 13)):
+        a = np.argmin((xgauge-distance)**2)
+        # panels[i].fill(ygauge, HH[a,:]/np.max(HH[a,:]), color=cm.jet(rel), alpha=0.5)
+        panels[i].plot(ygauge, HH[a,:]/np.max(HH[a,:]), color=cm.jet(rel))
+        # ixmax = np.argmin(np.abs(xgauge-xmax))
+        # plt.plot(ygauge, HH[ixmax,:], 'k-', lw=0.5)
 
-    hist3.invert_xaxis()
-    hist3.set_xlim(None,0)
-    hist3.set_ylim(ra)
-    hist3.tick_params(labelsize=14)
+        # plt.invert_xaxis()
+        # plt.ylim(None,0)
+        panels[i].set_xlim(ra)
+        panels[i].tick_params(labelsize=14)
+        if num==0:
+            panels[i].annotate(f"{distance*0.1:.1f} nm", xy=(0.95, 0.8), fontsize=14,xycoords='axes fraction', horizontalalignment='right')
+        panels[i].set_yticks([])
+        panels[i].set_xticks([])
 
-    # right
-    hist13.fill(HH[-1,:], ygauge, color=cm.viridis(panel/4))
-    hist13.set_xlim(0,None)
-    hist13.label_outer()
-    hist13.set_ylim(ra)
+    # farthest data from sd_ice
+    i = 3
+    distance=50
+    with open(f"sd_ice/{icef[num]}.d") as f:
+        D = [[float(v) for v in line.split()] for line in f.readlines() if line[0] != "#"]
+        D = np.array(D)
+        DD = D[D[:,0]==50.0, :]
+        r, avg, sd, _ = DD[0]
+        Y = np.exp(-(ygauge-avg)**2/(2*sd**2))
+        # panels[i].fill(ygauge, Y, color=cm.jet(rel), alpha=0.5)
+        panels[i].plot(ygauge, Y, color=cm.jet(rel))
+        # ixmax = np.argmin(np.abs(xgauge-xmax))
+        # plt.plot(ygauge, HH[ixmax,:], 'k-', lw=0.5)
 
+        # plt.invert_xaxis()
+        # plt.ylim(None,0)
+        panels[i].set_xlim(ra)
+        panels[i].tick_params(labelsize=14)
+        if num==0:
+            panels[i].annotate(f"{distance*0.1:.1f} nm", xy=(0.95, 0.8), fontsize=14,xycoords='axes fraction', horizontalalignment='right')
+        panels[i].set_yticks([])
+        panels[i].set_xlabel(r"$I_i(r)$ / kJ mol$^{-1}$", fontsize=14)
 
-
-#for a in ax.flat:
-#    # Hide x labels and tick labels for top plots and y ticks for right plots.
-#    a.label_outer()
-#    a.set_ylim(-150,-80)
 fig.savefig("Figure1.pdf", bbox_inches="tight")
