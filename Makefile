@@ -1,7 +1,7 @@
 ########## Preparations
 BASE=/Volumes/workarea/venvs/hyperhomogeneity/bin#/net/jukebox4.local/u2/matto/venvs/hyperhomogeneity/bin
 # BASE=/Users/matto/miniforge3/bin
-BASE=/Users/matto/venvs/genice2arm3/bin
+BASE=/Users/matto/venvs/genice2/bin
 PIP=$(BASE)/pip3
 PYTHON=$(BASE)/python3
 INKSCAPE=/Applications/Inkscape.app/Contents/MacOS/inkscape
@@ -128,6 +128,9 @@ FigureS5.pdf: FigureS5.py
 	-make extend.cycles5.pickle extendr.repr.pickle extend.cycles5stat.pickle # 9.cycles5stat.pickle
 	$(PYTHON) FigureS5.py
 
+# Figure S7: Artifact on SD in a very small cell at the ice surface.
+FigureS7.pdf: FigureS7.py
+	$(PYTHON) FigureS7.py
 
 ########## Sync
 sync:

@@ -1,5 +1,5 @@
 all:
-	i=1000; while [ $$i -lt 1030 ]; do for ice in 1h 3 5 6 7 4 1c 16 CS1 2D2 1cs; do echo $$ice-$$i.nx3a; done; i=`expr $$i + 1`; done | xargs make -j 8 -k
+	i=1000; while [ $$i -lt 1030 ]; do for ice in 1h 3 5 6 7 4 1c 16 CS1 2D2 1cs 1cxs; do echo $$ice-$$i.nx3a; done; i=`expr $$i + 1`; done | xargs make -j 8 -k
 
 1h-%.nx3a:
 	genice 1h -s $* -r 4 4 4 -f e > $@
@@ -25,3 +25,5 @@ CS1-%.nx3a:
 	genice 2D2 -s $* -r 8 8 1 -f e > $@
 1cs-%.nx3a:
 	genice2 1c -s $* -r 4 4 8 -f e | awk '/BOX3/{j=0}(j==1){$$3=100}{print;j++}'> $@
+1cxs-%.nx3a:
+	genice2 1c -s $* -r 2 2 2 -f e | ./double.py > $@

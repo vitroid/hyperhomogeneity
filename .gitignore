@@ -23,3 +23,5 @@ unused/
 *.nx3a
 
 ja
+
+.ipynb_checkpoints/
