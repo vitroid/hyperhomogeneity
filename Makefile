@@ -1,18 +1,22 @@
 ########## Preparations
-BASE=/Volumes/workarea/venvs/hyperhomogeneity/bin#/net/jukebox4.local/u2/matto/venvs/hyperhomogeneity/bin
-# BASE=/Users/matto/miniforge3/bin
-BASE=/Users/matto/venvs/genice2/bin
-PIP=$(BASE)/pip3
-PYTHON=$(BASE)/python3
+
+# On my mac
+BASE=/Users/matto/venvs/genice2/bin/
 INKSCAPE=/Applications/Inkscape.app/Contents/MacOS/inkscape
+CORES=8
+# On linux
+BASE=
+CORES=8
+
+PIP=$(BASE)pip3
+PYTHON=$(BASE)python3
 
 prepare:
-	$(PIP) install pairlist vapory yaplotlib matplotlib numpy networkx scipy cycless
-	pip install --upgrade pip
+	$(PIP) install pairlist vapory yaplotlib matplotlib numpy networkx scipy svgwrite cycless
+	$(PIP) install --upgrade pip
 
-fmodules: $(patsubst %.f95, %.cpython-37m-darwin.so, $(wildcard *.f95))
-%.cpython-37m-darwin.so: %.f95
-	f2py3 -c $< -m $*
+fmodules:
+	for f in *.f95; do f2py3 -c $$f -m `basename -s .f95 $$f`; done
 
 ########## General Rules
 
@@ -41,6 +45,8 @@ fmodules: $(patsubst %.f95, %.cpython-37m-darwin.so, $(wildcard *.f95))
 pngs:
 	ls *.pdf | sed -e s/pdf/png/ | xargs make -j 4 -k
 
+prep: $(wildcard q/*[^L]-1???.q.nx3a)
+	ls $^ | sed -e s@^q/@@ -e 's/.q.nx3a/.cycles5.pickle/' | xargs make -k #-j$(CORES) -k
 #ices.%:
 #	for ice in 1h 3 5 6 7; do ls q/$$ice-1000.q.nx3a | sed -e "s/q.nx3a/$*/g" -e "s:q/::g"; done | xargs make -j 32 -k
 ices.%:
@@ -59,9 +65,10 @@ extendr.%:
 
 ########## Everything
 
-everything: ices.hist.pickle extend.cycles5.pickle ices.cyclesintr.pickle \
+everything:
+	make -k fmodules ices.hist.pickle extend.cycles5.pickle ices.cyclesintr.pickle \
 	extend.cycles5stat.pickle extendr.repr.pickle ices.couhi.pickle \
-	Figure1.pdf Figure2a.svg Figure2bc.svg Figure3.pdf Figure4.pdf FigureS2.yap \
+	Figure1.pdf Figure3a.svg Figure3bc.svg Figure3.pdf Figure4.pdf FigureS2.yap \
 	FigureS3.pdf FigureS4.pdf FigureS5.pdf FigureS1.pdf
 	echo Done.
 
@@ -86,20 +93,20 @@ Figure1.pdf: Figure1.py q/11.q.nx3a
 	-make ices.hist.pickle
 	$(PYTHON) Figure1.py
 
-Figure2a.svg: Figure2a.py
-	$(PYTHON) Figure2a.py
+Figure3a.svg: Figure3a.py
+	$(PYTHON) Figure3a.py
 
-Figure2bc.svg: Figure2bc.py
-	$(PYTHON) Figure2bc.py
+Figure3bc.svg: Figure3bc.py
+	$(PYTHON) Figure3bc.py
 
 # Figure 3: Comparison between molecule and cycle basis
-Figure3.pdf: Figure3.py
+Figure4.pdf: Figure4.py
 	-make ices.cycles5.pickle ices.cyclesintr.pickle
-	$(PYTHON) Figure3.py
+	$(PYTHON) Figure4.py
 
 # Figure 4: Divergence of the interaction at the ice surface.
-Figure4.pdf: q/1cs.q.nx3a Figure4.py
-	$(PYTHON) Figure4.py
+Figure5.pdf: $(wildcard q/1cs*.q.nx3a) Figure5.py
+	$(PYTHON) Figure5.py
 
 
 # Cumulative interaction of CO-like molecule
@@ -128,12 +135,10 @@ FigureS5.pdf: FigureS5.py
 	-make extend.cycles5.pickle extendr.repr.pickle extend.cycles5stat.pickle # 9.cycles5stat.pickle
 	$(PYTHON) FigureS5.py
 
-# Figure S7: Artifact on SD in a very small cell at the ice surface.
-FigureS7.pdf: FigureS7.py
-	$(PYTHON) FigureS7.py
 
-########## Sync
+########## Remote job
+REMOTE=172.23.78.15
 sync:
-	rsync -av q r *.repr.pickle bluebird1.local:/r7/matto/hyperhomogeneity/
+	rsync -av --include="*/" --exclude="*.nx3a" *.f95 sd_ice r q *.py Makefile $(REMOTE):/r7/matto/hyperhomogeneity/
 syncback:
-	rsync -av --include="*/" --include="*.pdf" --include="*.svg" --include="*.yap" --exclude="*" bluebird1.local:/r7/matto/hyperhomogeneity/* /Volumes/workarea/work/hyperhomogeneity
+	rsync -av --include="*/" --include="*.pdf" --include="*.svg" --include="*.yap" --exclude="*" $(REMOTE):/r7/matto/hyperhomogeneity/* /Volumes/workarea/work/hyperhomogeneity

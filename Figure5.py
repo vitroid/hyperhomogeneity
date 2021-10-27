@@ -108,4 +108,4 @@ for panel, d in enumerate(distances):
     # if panel==2:
     #     main_ax.set_ylabel(r"$I_i(r)$"+r" / kJ mol$^{-1}$", fontsize=18)
 
-fig.savefig("FigureE.pdf", bbox_inches="tight")
+fig.savefig("Figure5.pdf", bbox_inches="tight")

@@ -12,7 +12,7 @@ import itertools as it
 basename=sys.argv[1]
 reprfile=sys.argv[2]
 
-comeus, cell = load_nx3a(open(basename))
+comeus, cell = load_nx3a(open(basename, encoding='utf-8'))
 Rcellmat = np.diag(cell)
 Rrpos = comeus[:,:3] @ np.linalg.inv(Rcellmat)
 Nmol = len(comeus)

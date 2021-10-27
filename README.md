@@ -4,13 +4,22 @@
 
 Supplementary codes to generate the Figures of [Matsumoto 2021].
 
+## To make the ice structures
+
+```shell
+$ cd r && make
+$ cd ..
+$ cd q && make
+$ cd ..
+```
+
 ## To make the all figures
 
 ```shell
 $ make everything
 ```
-will make everything (if you have the coordinate files in r/ and q/).
+will make everything.
 
 ## References
 
-2. Masakazu Matsumoto, Takuma Yagasaki, Hideki Tanaka et al. Hyperhomogeneity of hydrogen-disordered ice and its origin: the residual entropy compatible with the disparity in hydrogen bond energy, 22 January 2021, PREPRINT (Version 1) available at Research Square [https://doi.org/10.21203/rs.3.rs-143208/v1]
+1. Matsumoto, M., Yagasaki, T. & Tanaka, H. On the anomalous homogeneity of hydrogen-disordered ice and its origin. J. Chem. Phys. (2021) doi:[10.1063/5.0065215](https://doi.org/10.1063/5.0065215)
