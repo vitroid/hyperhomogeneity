@@ -6,7 +6,7 @@ INKSCAPE=/Applications/Inkscape.app/Contents/MacOS/inkscape
 CORES=8
 # On linux
 BASE=
-CORES=8
+CORES=32
 
 PIP=$(BASE)pip3
 PYTHON=$(BASE)python3
@@ -47,18 +47,12 @@ pngs:
 
 prep: $(wildcard q/*[^L]-1???.q.nx3a)
 	ls $^ | sed -e s@^q/@@ -e 's/.q.nx3a/.cycles5.pickle/' | xargs make -k #-j$(CORES) -k
-#ices.%:
-#	for ice in 1h 3 5 6 7; do ls q/$$ice-1000.q.nx3a | sed -e "s/q.nx3a/$*/g" -e "s:q/::g"; done | xargs make -j 32 -k
 ices.%:
-	for ice in 1h 3 5 6 7; do ls *-*.cycles5.pickle | sed -e "s/cycles5.pickle/$*/g" ; done | xargs make -j 32 -k
-#extend.%: $(wildcard *-1000.q.nx3a)
-#	echo $^ | sed -e "s/q.nx3a/$*/g" -e "s:q/::g" | xargs make -k -j 32
-#extendr.%: $(wildcard r/*-1000.nx3a)
-#	echo $^ | sed -e "s/nx3a/$*/g" -e "s:r/::g" | xargs make -k -j 32
-extend.%: $(wildcard *-*.cycles5.pickle)
-	echo $^ | sed -e "s/cycles5.pickle/$*/g" | xargs make -k -j 32
-extendr.%:
-	make extend.$*
+	for ice in 1h 3 5 6 7; do ls q/$$ice-10??.q.nx3a | sed -e "s/q.nx3a/$*/g" -e "s:q/::g"; done | xargs make -j $(CORES) -k
+icex.%:
+	for ice in 1h 3 5 6 7 16 CS1 2D2 1c ; do ls q/$$ice-10??.q.nx3a | sed -e "s/q.nx3a/$*/g" -e "s:q/::g"; done | xargs make -j $(CORES) -k
+icex1.%:
+	for ice in 1h 3 5 6 7 16 CS1 2D2 1c ; do ls q/$$ice-10??.q.nx3a | sed -e "s/q.nx3a/$*/g" -e "s:q/::g"; done | xargs make -k
 
 %.couhi.pickle: q/%.q.nx3a CoulombHist.py
 	$(PYTHON) CoulombHist.py $< $@
@@ -66,9 +60,9 @@ extendr.%:
 ########## Everything
 
 everything:
-	make -k fmodules ices.hist.pickle extend.cycles5.pickle ices.cyclesintr.pickle \
-	extend.cycles5stat.pickle extendr.repr.pickle ices.couhi.pickle \
-	Figure1.pdf Figure3a.svg Figure3bc.svg Figure3.pdf Figure4.pdf FigureS2.yap \
+	make -k fmodules ices.hist.pickle icex1.cycles5.pickle ices.cyclesintr.pickle \
+	icex.cycles5stat.pickle icex.repr.pickle ices.couhi.pickle \
+	Figure1.pdf Figure3a.svg Figure3bc.svg Figure4.pdf FigureS2.yap \
 	FigureS3.pdf FigureS4.pdf FigureS5.pdf FigureS1.pdf
 	echo Done.
 
@@ -139,6 +133,7 @@ FigureS5.pdf: FigureS5.py
 ########## Remote job
 REMOTE=172.23.78.15
 sync:
-	rsync -av --include="*/" --exclude="*.nx3a" *.f95 sd_ice r q *.py Makefile $(REMOTE):/r7/matto/hyperhomogeneity/
+	rsync -av *.f95 sd_ice r q *.py Makefile $(REMOTE):/r7/matto/hyperhomogeneity/
+	#rsync -av --include="*/" --exclude="*.nx3a" *.f95 sd_ice r q *.py Makefile $(REMOTE):/r7/matto/hyperhomogeneity/
 syncback:
 	rsync -av --include="*/" --include="*.pdf" --include="*.svg" --include="*.yap" --exclude="*" $(REMOTE):/r7/matto/hyperhomogeneity/* /Volumes/workarea/work/hyperhomogeneity
